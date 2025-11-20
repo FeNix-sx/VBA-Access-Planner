@@ -1,0 +1,62 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Form_frmThemeSelector"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Private Sub Form_Load()
+    LoadThemesList
+End Sub
+
+Private Sub LoadThemesList()
+    On Error GoTo ErrorHandler
+    
+    Dim db As DAO.Database
+    Dim rs As DAO.Recordset
+    
+    Set db = CurrentDb
+    Set rs = db.OpenRecordset("SELECT ThemeName FROM tbThemes ORDER BY ThemeName")
+    
+    ' Очищаем ListBox правильным способом
+    Me.lstThemes.RowSourceType = "Value List"
+    Me.lstThemes.RowSource = ""
+    
+    ' Добавляем элементы через цикл
+    Do While Not rs.EOF
+        Me.lstThemes.AddItem rs!ThemeName
+        rs.MoveNext
+    Loop
+    
+    rs.Close
+    
+    ' Выбираем первый элемент если есть
+    If Me.lstThemes.ListCount > 0 Then
+        Me.lstThemes.Selected(0) = True
+    End If
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка загрузки списка тем: " & Err.Description, vbCritical
+    If Not rs Is Nothing Then rs.Close
+End Sub
+
+Private Sub btnApply_Click()
+    If Me.lstThemes.ListIndex <> -1 Then
+        ' Вызываем процедуру ApplyTheme из основной формы
+        ' Замени "Form1" на реальное имя твоей основной формы с календарем
+        Forms!f_daily_planner.ApplyTheme Me.lstThemes.Value
+        DoCmd.Close acForm, Me.Name
+    Else
+        MsgBox "Выберите тему из списка!", vbExclamation
+    End If
+End Sub
+
+Private Sub btnClose_Click()
+    DoCmd.Close acForm, Me.Name
+End Sub

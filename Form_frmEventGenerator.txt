@@ -1,0 +1,699 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Form_frmEventGenerator"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+'################################################################
+'########           ФОРМА ГЕНЕРАЦИИ СОБЫТИЙ           ########
+'########              (ЛЕНТОЧНАЯ ФОРМА)              ########
+'################################################################
+
+' Свойства формы:
+' - Default View: Continuous Forms
+' - Record Source: tbTempEvents
+' - Allow Additions: No
+' - Allow Deletions: Yes
+' - Allow Edits: Yes
+
+'################################################################
+'########           ПРОСТАЯ НАСТРОЙКА РАЗМЕРА           ########
+'################################################################
+Private Sub Form_Load()
+    On Error GoTo ErrorHandler
+    
+    ' Пытаемся включить Date Picker через VBA
+'    Me.txtEventDate.Properties("ShowDatePicker") = True
+    
+    ' Или через свойства формы
+'    Me.DatePickers = True
+
+    On Error GoTo ErrorHandler
+    
+    ' Просто максимизируем и восстанавливаем - это часто помогает
+    DoCmd.Maximize
+    DoEvents
+    DoCmd.Restore
+    DoEvents
+    
+    ' Устанавливаем размер
+    DoCmd.MoveSize 7000, 4000, 15200, 12000
+
+ErrorHandler:
+    LoadPeriodicityCombo
+    LoadExecutorsCombo
+End Sub
+
+'################################################################
+'########        РАЗМЕР ПРИ АКТИВАЦИИ ФОРМЫ             ########
+'################################################################
+Private Sub Form_Activate()
+    On Error Resume Next
+    ' Дополнительная настройка при активации
+    If Me.WindowWidth <> 14000 Then
+        DoCmd.MoveSize , , 14000, 9000
+    End If
+End Sub
+
+'################################################################
+'########             ИНИЦИАЛИЗАЦИЯ ФОРМЫ                ########
+'########          ПРИ ЗАГРУЗКЕ (ПЕРВЫЙ ЭТАП)            ########
+'################################################################
+Private Sub InitializeForm()
+    ' Сначала показываем только выбор периодичности
+    Me.cboPeriodicity.Visible = True
+    Me.lblPeriodicity.Visible = True
+    
+    ' Все остальные поля скрываем
+    Me.cboRule.Visible = False
+    Me.lblRule.Visible = False
+    Me.cboDayOfMonth.Visible = False
+    Me.lblDayOfMonth.Visible = False
+    Me.txtStartDate.Visible = False
+    Me.txtEndDate.Visible = False
+    Me.lblPeriod.Visible = False
+    Me.lblStartDate.Visible = False
+    Me.lblEndDate.Visible = False
+    Me.lblEventText.Visible = False
+    Me.txtEventText.Visible = False
+    Me.cmdGenerate.Visible = False
+    Me.cmdClear.Visible = False
+    Me.cmdBrowseAttachment.Visible = False
+    Me.lblAttachmentPath.Visible = False
+    Me.txtAttachmentPath.Visible = False
+    Me.cmdBrowseBasisAttachment.Visible = False
+    Me.lblBasisAttachment.Visible = False
+    Me.txtBasisAttachment.Visible = False
+    
+    ' ДОБАВЛЯЕМ СКРЫТИЕ ИСПОЛНИТЕЛЯ
+    Me.cboExecutor.Visible = False
+    Me.lblExecutor.Visible = False
+End Sub
+
+'################################################################
+'########             ЗАГРУЗКА ДАННЫХ В КОМБОБОКС        ########
+'########                   ПЕРИОДИЧНОСТИ                ########
+'################################################################
+Private Sub LoadPeriodicityCombo()
+    Me.cboPeriodicity.RowSource = "SELECT PeriodicityID, PeriodicityName FROM tbPeriodicity ORDER BY PeriodicityID"
+    Me.cboPeriodicity.ColumnCount = 2
+    Me.cboPeriodicity.BoundColumn = 1
+    Me.cboPeriodicity.ColumnWidths = "0;3см"
+End Sub
+
+'################################################################
+'########        ИЗМЕНЕНИЕ ПЕРИОДИЧНОСТИ (ОБНОВЛЕНО)    ########
+'################################################################
+Private Sub cboPeriodicity_AfterUpdate()
+    On Error Resume Next
+    
+    ' Сохраняем ВСЕ значения перед изменением
+    Dim savedDay As Variant, savedText As String, savedStart As Variant, savedEnd As Variant
+    Dim savedExecutor As Variant, savedAttach As String, savedBasis As String
+    
+    savedDay = Me.cboDayOfMonth.Value
+    savedText = Me.txtEventText.Value
+    savedStart = Me.txtStartDate.Value
+    savedEnd = Me.txtEndDate.Value
+    savedExecutor = Me.cboExecutor.Value
+    savedAttach = Me.txtAttachmentPath.Value
+    savedBasis = Me.txtBasisAttachment.Value
+    
+    ' Меняем видимость
+    Me.cboRule.Visible = False
+    Me.lblRule.Visible = False
+    Me.cboDayOfMonth.Visible = True
+    Me.lblDayOfMonth.Visible = True
+    
+    ' Меняем режим комбобокса
+    Dim periodicity As String
+    periodicity = Me.cboPeriodicity.Column(1)
+    
+    If periodicity = "Еженедельно" Then
+        SwitchToWeeklyMode
+    Else
+        SwitchToMonthlyMode
+    End If
+    
+    ' Восстанавливаем ВСЕ значения
+    Me.cboDayOfMonth.Value = savedDay
+    Me.txtEventText.Value = savedText
+    Me.txtStartDate.Value = savedStart
+    Me.txtEndDate.Value = savedEnd
+    Me.cboExecutor.Value = savedExecutor
+    Me.txtAttachmentPath.Value = savedAttach
+    Me.txtBasisAttachment.Value = savedBasis
+    
+    ' Показываем остальные поля
+    Me.txtEventText.Visible = True
+    Me.lblEventText.Visible = True
+    Me.cboExecutor.Visible = True
+    Me.lblExecutor.Visible = True
+    Me.cmdGenerate.Visible = True
+    Me.cmdClear.Visible = True
+    Me.cmdBrowseAttachment.Visible = True
+    Me.lblAttachmentPath.Visible = True
+    Me.txtAttachmentPath.Visible = True
+    Me.cmdBrowseBasisAttachment.Visible = True
+    Me.lblBasisAttachment.Visible = True
+    Me.txtBasisAttachment.Visible = True
+End Sub
+
+'################################################################
+'########        ЗАГРУЗКА ИСПОЛНИТЕЛЕЙ В КОМБОБОКС      ########
+'################################################################
+Private Sub LoadExecutorsCombo()
+    On Error GoTo ErrorHandler
+    
+    Me.cboExecutor.RowSource = "SELECT ID, LastName & ' ' & Left(FirstName,1) & '.' & Left(MiddleName,1) & '.' AS FullName " & _
+                              "FROM tbExecutors WHERE ID IS NOT NULL ORDER BY SortOrder, LastName, FirstName"
+    Me.cboExecutor.ColumnCount = 2
+    Me.cboExecutor.BoundColumn = 1
+    Me.cboExecutor.ColumnWidths = "0;4см"
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка загрузки списка исполнителей: " & Err.Description, vbExclamation
+End Sub
+
+'################################################################
+'########           ЗАГРУЗКА ЧИСЕЛ МЕСЯЦА              ########
+'################################################################
+Private Sub LoadDayOfMonthCombo()
+    ' Очищаем комбобокс
+    Me.cboDayOfMonth.RowSource = ""
+    
+    ' Устанавливаем тип источника данных
+    Me.cboDayOfMonth.RowSourceType = "Value List"
+    
+    ' Сбрасываем настройки колонок для простого списка
+    Me.cboDayOfMonth.ColumnCount = 1
+    Me.cboDayOfMonth.ColumnWidths = ""
+    
+    ' Добавляем числа по одному
+    Dim i As Integer
+    For i = 1 To 31
+        Me.cboDayOfMonth.AddItem i
+    Next i
+End Sub
+
+'################################################################
+'########             ИЗМЕНЕНИЕ ЧИСЛА МЕСЯЦА             ########
+'################################################################
+Private Sub cboDayOfMonth_AfterUpdate()
+    If Not IsNull(Me.cboDayOfMonth) Then
+        ' Показываем поля периода
+        Me.txtStartDate.Visible = True
+        Me.txtEndDate.Visible = True
+        Me.lblPeriod.Visible = True
+        Me.lblStartDate.Visible = True
+        Me.lblEndDate.Visible = True
+    Else
+        ' Скрываем поля периода если число не выбрано
+        Me.txtStartDate.Visible = False
+        Me.txtEndDate.Visible = False
+        Me.lblPeriod.Visible = False
+        Me.lblStartDate.Visible = False
+        Me.lblEndDate.Visible = False
+    End If
+End Sub
+
+'################################################################
+'########           ПРОВЕРКА ЗАПОЛНЕНИЯ ПОЛЕЙ          ########
+'################################################################
+Private Function ValidateInput() As Boolean
+    If IsNull(Me.cboPeriodicity) Then
+        MsgBox "Выберите периодичность!", vbExclamation
+        Me.cboPeriodicity.SetFocus
+        Exit Function
+    End If
+    
+    If IsNull(Me.cboDayOfMonth) Then
+        MsgBox "Выберите число месяца!", vbExclamation
+        Me.cboDayOfMonth.SetFocus
+        Exit Function
+    End If
+    
+    If IsNull(Me.txtStartDate) Then
+        MsgBox "Укажите дату начала!", vbExclamation
+        Me.txtStartDate.SetFocus
+        Exit Function
+    End If
+    
+    If IsNull(Me.txtEndDate) Then
+        MsgBox "Укажите дату окончания!", vbExclamation
+        Me.txtEndDate.SetFocus
+        Exit Function
+    End If
+    
+    If IsNull(Me.txtEventText) Or Me.txtEventText = "" Then
+        MsgBox "Введите текст события!", vbExclamation
+        Me.txtEventText.SetFocus
+        Exit Function
+    End If
+    
+    ' Проверка что дата начала меньше даты окончания минимум на 1 день
+    If CDate(Me.txtStartDate) >= CDate(Me.txtEndDate) Then
+        MsgBox "Дата начала должна быть меньше даты окончания минимум на 1 день!", vbExclamation
+        Me.txtStartDate.SetFocus
+        Exit Function
+    End If
+    
+    ValidateInput = True
+End Function
+
+'################################################################
+'########             КНОПКА "СГЕНЕРИРОВАТЬ"             ########
+'########         ЗАПУСК ПРОВЕРКИ И ГЕНЕРАЦИИ СОБЫТИЙ    ########
+'################################################################
+Private Sub cmdGenerate_Click()
+    If ValidateInput() Then
+        GenerateEvents
+    End If
+End Sub
+
+'################################################################
+'########             КНОПКА "ОЧИСТИТЬ"                  ########
+'################################################################
+Private Sub cmdClear_Click()
+    ' Очищаем все поля
+    Me.cboPeriodicity.Value = Null
+    Me.cboDayOfMonth.Value = Null
+    Me.txtEventText.Value = ""
+    Me.txtStartDate.Value = Null
+    Me.txtEndDate.Value = Null
+    
+    ' Очищаем временную таблицу
+    CurrentDb.Execute "DELETE FROM tbTempEvents"
+    Me.Requery
+    UpdateCount
+    
+    ' Возвращаем к первому этапу - только выбор периодичности
+    InitializeForm
+End Sub
+
+'################################################################
+'########         СМЕНА РЕЖИМА ДЛЯ ЕЖЕНЕДЕЛЬНЫХ          ########
+'################################################################
+Private Sub SwitchToWeeklyMode()
+    Me.lblDayOfMonth.Caption = "День недели"
+    LoadDaysOfWeekCombo
+End Sub
+
+'################################################################
+'########           ЗАГРУЗКА ДНЕЙ НЕДЕЛИ                ########
+'################################################################
+Private Sub LoadDaysOfWeekCombo()
+    ' Полностью пересоздаем RowSource
+    Me.cboDayOfMonth.RowSourceType = "Value List"
+    Me.cboDayOfMonth.RowSource = "1;Понедельник;2;Вторник;3;Среда;4;Четверг;5;Пятница;6;Суббота;7;Воскресенье"
+    
+    ' Настраиваем колонки
+    Me.cboDayOfMonth.ColumnCount = 2
+    Me.cboDayOfMonth.BoundColumn = 1
+    Me.cboDayOfMonth.ColumnWidths = "0;3см"
+End Sub
+
+'################################################################
+'########         ВОЗВРАТ К РЕЖИМУ ЧИСЛА МЕСЯЦА          ########
+'################################################################
+Private Sub SwitchToMonthlyMode()
+    Me.lblDayOfMonth.Caption = "Число месяца"
+    LoadDayOfMonthCombo
+End Sub
+
+'################################################################
+'########             ГЕНЕРАЦИЯ СОБЫТИЙ                  ########
+'################################################################
+Private Sub GenerateEvents()
+    On Error GoTo ErrorHandler
+    
+    'Очищаем только временную таблицу, НЕ поля настройки
+    CurrentDb.Execute "DELETE FROM tbTempEvents"
+    
+    Dim periodicity As String
+    Dim dayOfMonth As Integer
+    Dim startDate As Date, endDate As Date
+    Dim eventText As String
+    Dim ExecutorID As Variant
+    
+    ' Получаем значения из формы
+    periodicity = Me.cboPeriodicity.Column(1) ' Берем текстовое значение
+    dayOfMonth = Me.cboDayOfMonth
+    startDate = Me.txtStartDate
+    endDate = Me.txtEndDate
+    eventText = Me.txtEventText
+    ExecutorID = Me.cboExecutor
+    
+    ' Генерируем события в зависимости от периодичности
+    Select Case periodicity
+        Case "Однократно"
+            GenerateSingleEvent startDate, eventText, ExecutorID
+            
+        Case "Ежедневно"
+            GenerateDailyEvents startDate, endDate, eventText, ExecutorID
+            
+        Case "Еженедельно"
+            GenerateWeeklyEvents startDate, endDate, dayOfMonth, eventText, ExecutorID
+            
+        Case "Ежемесячно"
+            GenerateMonthlyEvents startDate, endDate, dayOfMonth, eventText, ExecutorID
+            
+        Case "Ежеквартально"
+            GenerateQuarterlyEvents startDate, endDate, dayOfMonth, eventText, ExecutorID
+            
+        Case "Раз в полгода"
+            GenerateHalfYearEvents startDate, endDate, dayOfMonth, eventText, ExecutorID
+            
+        Case "Ежегодно"
+            GenerateYearlyEvents startDate, endDate, dayOfMonth, eventText, ExecutorID
+    End Select
+    
+    ' Обновляем отображение
+    UpdateDisplay
+    Me.Refresh
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка генерации событий: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########           ОДНОКРАТНОЕ СОБЫТИЕ                ########
+'################################################################
+Private Sub GenerateSingleEvent(EventDate As Date, eventText As String, ExecutorID As Variant)
+    AddTempEvent EventDate, eventText, ExecutorID
+End Sub
+
+'################################################################
+'########             ЕЖЕДНЕВНЫЕ СОБЫТИЯ                ########
+'################################################################
+Private Sub GenerateDailyEvents(startDate As Date, endDate As Date, eventText As String, ExecutorID As Variant)
+    Dim currentDate As Date
+    currentDate = startDate
+    
+    Do While currentDate <= endDate
+        AddTempEvent currentDate, eventText, ExecutorID
+        currentDate = DateAdd("d", 1, currentDate)
+    Loop
+End Sub
+
+'################################################################
+'########              ЕЖЕНЕДЕЛЬНЫЕ СОБЫТИЯ              ########
+'################################################################
+Private Sub GenerateWeeklyEvents(startDate As Date, endDate As Date, dayOfWeek As Integer, eventText As String, ExecutorID As Variant)
+    ' Проверяем что день недели от 1 до 7
+    If dayOfWeek < 1 Or dayOfWeek > 7 Then
+        MsgBox "Для еженедельных событий выберите день недели от 1 до 7!", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Находим первый указанный день недели после startDate
+    Dim firstOccurrence As Date
+    firstOccurrence = startDate
+    
+    ' Ищем ближайший указанный день недели
+    Do While weekday(firstOccurrence, vbMonday) <> dayOfWeek
+        firstOccurrence = DateAdd("d", 1, firstOccurrence)
+    Loop
+    
+    Dim currentDate As Date
+    currentDate = firstOccurrence
+    
+    Do While currentDate <= endDate
+        AddTempEvent currentDate, eventText, ExecutorID
+        ' Переходим к следующей неделе
+        currentDate = DateAdd("d", 7, currentDate)
+    Loop
+End Sub
+
+'################################################################
+'########             ЕЖЕМЕСЯЧНЫЕ СОБЫТИЯ                ########
+'################################################################
+Private Sub GenerateMonthlyEvents(startDate As Date, endDate As Date, dayOfMonth As Integer, eventText As String, ExecutorID As Variant)
+    Dim currentDate As Date
+    currentDate = startDate
+    
+    Do While currentDate <= endDate
+        ' Создаем дату с выбранным числом месяца
+        Dim EventDate As Date
+        EventDate = DateSerial(Year(currentDate), Month(currentDate), dayOfMonth)
+        
+        ' Проверяем что дата входит в диапазон
+        If EventDate >= startDate And EventDate <= endDate Then
+            AddTempEvent EventDate, eventText, ExecutorID
+        End If
+        
+        ' Переходим к следующему месяцу
+        currentDate = DateAdd("m", 1, currentDate)
+    Loop
+End Sub
+
+'################################################################
+'########           ЕЖЕКВАРТАЛЬНЫЕ СОБЫТИЯ              ########
+'################################################################
+Private Sub GenerateQuarterlyEvents(startDate As Date, endDate As Date, dayOfMonth As Integer, eventText As String, ExecutorID As Variant)
+    Dim firstOccurrence As Date
+    
+    ' Находим первое ближайшее число dayOfMonth после startDate
+    firstOccurrence = DateSerial(Year(startDate), Month(startDate), dayOfMonth)
+    If firstOccurrence < startDate Then
+        firstOccurrence = DateAdd("m", 1, firstOccurrence)
+        firstOccurrence = DateSerial(Year(firstOccurrence), Month(firstOccurrence), dayOfMonth)
+    End If
+    
+    Dim currentDate As Date
+    currentDate = firstOccurrence
+    
+    Do While currentDate <= endDate
+        AddTempEvent currentDate, eventText, ExecutorID
+        ' Переходим к следующему кварталу (+3 месяца)
+        currentDate = DateAdd("m", 3, currentDate)
+    Loop
+End Sub
+
+'################################################################
+'########            РАЗ В ПОЛГОДА СОБЫТИЯ               ########
+'################################################################
+Private Sub GenerateHalfYearEvents(startDate As Date, endDate As Date, dayOfMonth As Integer, eventText As String, ExecutorID As Variant)
+    Dim firstOccurrence As Date
+    
+    ' Находим первое ближайшее число dayOfMonth после startDate
+    firstOccurrence = DateSerial(Year(startDate), Month(startDate), dayOfMonth)
+    If firstOccurrence < startDate Then
+        firstOccurrence = DateAdd("m", 1, firstOccurrence)
+        firstOccurrence = DateSerial(Year(firstOccurrence), Month(firstOccurrence), dayOfMonth)
+    End If
+    
+    Dim currentDate As Date
+    currentDate = firstOccurrence
+    
+    Do While currentDate <= endDate
+        AddTempEvent currentDate, eventText, ExecutorID
+        ' Переходим к следующему полугодию (+6 месяцев)
+        currentDate = DateAdd("m", 6, currentDate)
+    Loop
+End Sub
+
+'################################################################
+'########             ЕЖЕГОДНЫЕ СОБЫТИЯ                 ########
+'################################################################
+Private Sub GenerateYearlyEvents(startDate As Date, endDate As Date, dayOfMonth As Integer, eventText As String, ExecutorID As Variant)
+    Dim firstOccurrence As Date
+    
+    ' Находим первое ближайшее число dayOfMonth после startDate
+    firstOccurrence = DateSerial(Year(startDate), Month(startDate), dayOfMonth)
+    If firstOccurrence < startDate Then
+        firstOccurrence = DateAdd("yyyy", 1, firstOccurrence)
+        firstOccurrence = DateSerial(Year(firstOccurrence), Month(firstOccurrence), dayOfMonth)
+    End If
+    
+    Dim currentDate As Date
+    currentDate = firstOccurrence
+    
+    Do While currentDate <= endDate
+        AddTempEvent currentDate, eventText, ExecutorID
+        ' Переходим к следующему году (+12 месяцев)
+        currentDate = DateAdd("yyyy", 1, currentDate)
+    Loop
+End Sub
+
+'################################################################
+'########           ДОБАВЛЕНИЕ СОБЫТИЯ В ТАБЛИЦУ         ########
+'################################################################
+Private Sub AddTempEvent(EventDate As Date, eventText As String, ExecutorID As Variant)
+    Dim execID As String
+    Dim AttachmentPath As String
+    Dim BasisAttachment As String
+    
+    execID = IIf(IsNull(ExecutorID), "NULL", ExecutorID)
+    
+    ' Обрабатываем пути к вложениям
+    If IsNull(Me.txtAttachmentPath) Or Me.txtAttachmentPath = "" Then
+        AttachmentPath = "NULL"
+    Else
+        AttachmentPath = "'" & Replace(Me.txtAttachmentPath, "'", "''") & "'"
+    End If
+    
+    If IsNull(Me.txtBasisAttachment) Or Me.txtBasisAttachment = "" Then
+        BasisAttachment = "NULL"
+    Else
+        BasisAttachment = "'" & Replace(Me.txtBasisAttachment, "'", "''") & "'"
+    End If
+    
+    CurrentDb.Execute "INSERT INTO tbTempEvents (EventDate, EventNote, ExecutorID, AttachmentPath, BasisAttachment) " & _
+                      "VALUES (#" & Format(EventDate, "yyyy-mm-dd") & "#, '" & Replace(eventText, "'", "''") & "', " & execID & ", " & AttachmentPath & ", " & BasisAttachment & ")"
+    
+    ' Проверим что записалось
+    Dim rs As DAO.Recordset
+    Set rs = CurrentDb.OpenRecordset("SELECT TOP 1 * FROM tbTempEvents ORDER BY TempID DESC")
+    rs.Requery
+    rs.Close
+End Sub
+'################################################################
+'########           ПОЛУЧЕНИЕ НАЗВАНИЯ ДНЯ НЕДЕЛИ        ########
+'################################################################
+Private Function GetWeekdayName(EventDate As Date) As String
+    Dim dayOfWeek As Integer
+    dayOfWeek = weekday(EventDate, vbMonday) ' Понедельник = 1
+    
+    Select Case dayOfWeek
+        Case 1: GetWeekdayName = "Пн"
+        Case 2: GetWeekdayName = "Вт"
+        Case 3: GetWeekdayName = "Ср"
+        Case 4: GetWeekdayName = "Чт"
+        Case 5: GetWeekdayName = "Пт"
+        Case 6: GetWeekdayName = "Сб"
+        Case 7: GetWeekdayName = "Вс"
+    End Select
+End Function
+
+'################################################################
+'########             ОБНОВЛЕНИЕ СЧЕТЧИКА                ########
+'################################################################
+Private Sub UpdateCount()
+    Dim count As Integer
+    count = DCount("*", "tbTempEvents")
+    Me.lblCount.Caption = "Сгенерировано событий: " & count
+End Sub
+
+'################################################################
+'########             ОБНОВЛЕНИЕ ОТОБРАЖЕНИЯ             ########
+'################################################################
+Private Sub UpdateDisplay()
+    Me.txtWeekday.ControlSource = "=Choose(Weekday([EventDate]),""Вс"",""Пн"",""Вт"",""Ср"",""Чт"",""Пт"",""Сб"")"
+    Me.Requery
+    Me.Repaint
+    DoEvents
+    UpdateCount
+End Sub
+
+'################################################################
+'########            КНОПКА "ЗАПИСАТЬ В КАЛЕНДАРЬ"       ########
+'################################################################
+Private Sub cmdSave_Click()
+    If DCount("*", "tbTempEvents") = 0 Then
+        MsgBox "Нет событий для сохранения!", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Сохраняем возможные изменения в событиях
+    If Me.Dirty Then Me.Dirty = False
+    
+    If MsgBox("Сохранить все сгенерированные события в календарь?", vbQuestion + vbYesNo) = vbYes Then
+        ' Сохраняем и получаем количество сохраненных записей
+        Dim recordsSaved As Long
+        recordsSaved = SaveEventsToCalendar()
+        
+        If recordsSaved > 0 Then
+            ' ОБНОВЛЯЕМ ФОРМУ КАЛЕНДАРЯ
+            UpdateCalendarForm
+            
+            MsgBox "События успешно сохранены в календарь! (" & recordsSaved & " записей)", vbInformation
+            ' Очищаем только предпросмотр, НЕ поля настройки
+            CurrentDb.Execute "DELETE FROM tbTempEvents"
+            Me.Requery
+            UpdateCount
+        Else
+            MsgBox "Не удалось сохранить события!", vbExclamation
+        End If
+    End If
+End Sub
+
+'################################################################
+'########            ОБНОВЛЕНИЕ ФОРМЫ КАЛЕНДАРЯ          ########
+'################################################################
+Private Sub UpdateCalendarForm()
+    On Error GoTo ErrorHandler
+    
+    ' Проверяем что форма загружена
+    If Not CurrentProject.AllForms("f_daily_planner").IsLoaded Then Exit Sub
+    
+    ' Вызываем процедуру перестроения календаря
+    Forms!f_daily_planner.BuildCalendar
+    Forms!f_daily_planner.Repaint
+    DoEvents
+    
+    Exit Sub
+    
+ErrorHandler:
+    ' Если ошибка - просто игнорируем
+End Sub
+
+'################################################################
+'########            СОХРАНЕНИЕ В КАЛЕНДАРЬ              ########
+'################################################################
+Private Function SaveEventsToCalendar() As Long
+    On Error GoTo ErrorHandler
+    
+    Dim db As DAO.Database
+    Dim recordsAffected As Long
+    
+    Set db = CurrentDb
+    
+    ' Копируем события с исполнителем и ВЛОЖЕНИЯМИ
+    db.Execute "INSERT INTO tbEventInstances (EventDate, EventNote, ExecutorID, AttachmentPath, BasisAttachment) " & _
+               "SELECT EventDate, EventNote, ExecutorID, AttachmentPath, BasisAttachment FROM tbTempEvents"
+    
+    recordsAffected = db.recordsAffected
+    SaveEventsToCalendar = recordsAffected
+    
+    ' Отладка
+    Debug.Print "Сохранено записей: " & recordsAffected
+    Exit Function
+    
+ErrorHandler:
+    MsgBox "Ошибка сохранения в календарь: " & Err.Description, vbCritical
+    SaveEventsToCalendar = 0
+End Function
+
+'################################################################
+'########        ВЫБОР ФАЙЛА ДЛЯ СОБЫТИЯ               ########
+'################################################################
+Private Sub cmdBrowseAttachment_Click()
+    On Error GoTo ErrorHandler
+    ' Открываем форму выбора с параметром "Main" для основного вложения
+    DoCmd.OpenForm "frmFileFolderSelector", , , , , acDialog, "Main"
+    Exit Sub
+ErrorHandler:
+    MsgBox "Ошибка выбора файла события: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########        ВЫБОР ФАЙЛА ДЛЯ ОСНОВАНИЯ             ########
+'################################################################
+Private Sub cmdBrowseBasisAttachment_Click()
+    On Error GoTo ErrorHandler
+    ' Открываем форму выбора с параметром "Basis" для вложения основания
+    DoCmd.OpenForm "frmFileFolderSelector", , , , , acDialog, "Basis"
+    Exit Sub
+ErrorHandler:
+    MsgBox "Ошибка выбора файла основания: " & Err.Description, vbCritical
+End Sub

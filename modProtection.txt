@@ -1,0 +1,772 @@
+Attribute VB_Name = "modProtection"
+Option Compare Database
+
+'################################################################
+'########           ПОЛУЧЕНИЕ ИМЕНИ КОМПЬЮТЕРА           ########
+'################################################################
+Public Function GetComputerName() As String
+    On Error GoTo ErrorHandler
+    
+    GetComputerName = Environ("COMPUTERNAME")
+    Exit Function
+    
+ErrorHandler:
+    GetComputerName = "Unknown"
+End Function
+
+'################################################################
+'########         ПОЛУЧЕНИЕ MAC-АДРЕСА СЕТЕВОЙ КАРТЫ     ########
+'################################################################
+Public Function GetMACAddress() As String
+    On Error GoTo ErrorHandler
+    
+    Dim wmi As Object
+    Dim adapters As Object
+    Dim adapter As Object
+    
+    Set wmi = GetObject("winmgmts:\\.\root\cimv2")
+    Set adapters = wmi.ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE NetConnectionStatus = 2")
+    
+    For Each adapter In adapters
+        If adapter.macAddress <> "" Then
+            GetMACAddress = adapter.macAddress
+            Exit For
+        End If
+    Next adapter
+    
+    If GetMACAddress = "" Then GetMACAddress = "NoMAC"
+    Exit Function
+    
+ErrorHandler:
+    GetMACAddress = "ErrorMAC"
+End Function
+
+'################################################################
+'########    УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ДИСКА         ########
+'################################################################
+Public Function GetDiskSerial() As String
+    On Error GoTo ErrorHandler
+    
+    Dim serialWMI As String
+    Dim serialFSO As String
+    
+    ' ПРОБУЕМ WMI МЕТОД (БОЛЕЕ НАДЕЖНЫЙ)
+    serialWMI = GetDiskSerialWMI()
+    If serialWMI <> "WMISerialError" And serialWMI <> "NoDiskSerial" Then
+        GetDiskSerial = serialWMI
+        Exit Function
+    End If
+    
+    ' ЕСЛИ WMI НЕ СРАБОТАЛ - ПРОБУЕМ FSO
+    Dim fso As Object
+    Dim drive As Object
+    Dim serialNumber As Long
+    
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set drive = fso.GetDrive("C:")
+    
+    serialNumber = drive.serialNumber
+    
+    ' ОБРАБАТЫВАЕМ ОТРИЦАТЕЛЬНЫЕ ЗНАЧЕНИЯ
+    If serialNumber < 0 Then
+        serialNumber = serialNumber + 4294967296#
+    End If
+    
+    GetDiskSerial = CStr(serialNumber)
+    Exit Function
+    
+ErrorHandler:
+    GetDiskSerial = "DiskError"
+End Function
+
+'################################################################
+'########            УПРОЩЕННЫЙ НО НАДЕЖНЫЙ ID           ########
+'################################################################
+Public Function GenerateComputerID() As String
+    On Error GoTo ErrorHandler
+    
+    Dim rawID As String
+    
+    ' ИСПОЛЬЗУЕМ ТОЛЬКО РАБОЧАЮЩИЕ КОМПОНЕНТЫ
+    rawID = GetMACAddress() & "|" & GetDiskSerial() & "|" & GetComputerName()
+    
+    GenerateComputerID = AdvancedHash(rawID)
+    Exit Function
+    
+ErrorHandler:
+    GenerateComputerID = "SafeID_Error"
+End Function
+
+'################################################################
+'########        СУПЕР-ПРОСТАЯ ХЭШ-ФУНКЦИЯ        ########
+'################################################################
+Private Function SimpleHash(inputText As String) As String
+    On Error GoTo ErrorHandler
+    
+    Dim i As Integer
+    Dim hash As Long
+    Dim result As String
+    
+    If inputText = "" Then
+        SimpleHash = "00000000"
+        Exit Function
+    End If
+    
+    ' Максимально простой алгоритм
+    hash = 0
+    For i = 1 To Len(inputText)
+        hash = hash + Asc(Mid(inputText, i, 1))
+    Next i
+    
+    ' Ограничиваем и преобразуем
+    hash = hash Mod 100000000
+    result = Hex(hash)
+    
+    ' Добиваем до 8 символов
+    While Len(result) < 8
+        result = "0" & result
+    Wend
+    
+    SimpleHash = result
+    Exit Function
+    
+ErrorHandler:
+    ' Резервный вариант - возвращаем фиксированный хэш для теста
+    SimpleHash = "1234ABCD"
+End Function
+
+'################################################################
+'########         ПОЛУЧЕНИЕ ID ФАЙЛА БАЗЫ ДАННЫХ         ########
+'################################################################
+Public Function GenerateFileID() As String
+    On Error GoTo ErrorHandler
+    
+    Dim filePath As String
+    Dim createDate As Date
+    Dim fso As Object
+    
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    
+    ' ПУТЬ К ТЕКУЩЕЙ БАЗЕ ДАННЫХ
+    filePath = CurrentProject.FullName
+    
+    ' ПОЛУЧАЕМ ТОЛЬКО СТАБИЛЬНЫЕ ХАРАКТЕРИСТИКИ ФАЙЛА
+    With fso.GetFile(filePath)
+        createDate = .DateCreated  ' Дата создания не меняется
+    End With
+    
+    ' СОЗДАЕМ УНИКАЛЬНЫЙ ID ФАЙЛА (без размера)
+    Dim fileInfo As String
+    fileInfo = filePath & "|" & createDate
+    
+    GenerateFileID = AdvancedHash(fileInfo)
+    Exit Function
+    
+ErrorHandler:
+    GenerateFileID = "FileID_Error"
+End Function
+
+'################################################################
+'########       ТЕСТ СИСТЕМЫ ЗАЩИТЫ ОТ КОПИРОВАНИЯ       ########
+'################################################################
+Public Sub TestProtectionSystem()
+    On Error GoTo ErrorHandler
+    
+    Dim currentComputerID As String
+    Dim savedActivationKey As String
+    Dim activationDate As String
+    
+    Debug.Print "=== ТЕСТ СИСТЕМЫ ЗАЩИТЫ ОТ КОПИРОВАНИЯ ==="
+    
+    ' ГЕНЕРИРУЕМ ТЕКУЩИЙ ComputerID
+    currentComputerID = GenerateComputerID()
+    Debug.Print "Текущий ComputerID: " & currentComputerID
+    
+    ' ЗАГРУЖАЕМ СОХРАНЕННЫЙ КЛЮЧ ИЗ TBsettings
+    savedActivationKey = LoadLicenseSetting("ActivationKey")
+    Debug.Print "Сохраненный ActivationKey: " & savedActivationKey
+    
+    ' ЗАГРУЖАЕМ ДАТУ АКТИВАЦИИ
+    activationDate = LoadLicenseSetting("ActivationDate")
+    Debug.Print "Дата активации: " & activationDate
+    
+    ' ВАРИАНТ 1: ПЕРВЫЙ ЗАПУСК (КЛЮЧА НЕТ)
+    If savedActivationKey = "" Then
+        Debug.Print "ПЕРВЫЙ ЗАПУСК - СОХРАНЯЕМ КЛЮЧ"
+        Call SaveLicenseSetting("ActivationKey", currentComputerID)
+        Call SaveLicenseSetting("ActivationDate", Format(Date, "dd.mm.yyyy"))
+        
+        ' КРАСИВОЕ СООБЩЕНИЕ О ПЕРВОМ ЗАПУСКЕ
+        MsgBox "=== ПЕРВЫЙ ЗАПУСК ===" & vbCrLf & vbCrLf & _
+               "Программа успешно активирована на этом компьютере." & vbCrLf & _
+               "Лицензия зарегистрирована автоматически." & vbCrLf & vbCrLf & _
+               "*********************************" & vbCrLf & _
+               " ***** Добро пожаловать! *****" & vbCrLf & _
+               "*********************************", _
+               vbInformation, "Активация выполнена"
+        Exit Sub
+    End If
+    
+    ' ВАРИАНТ 2: КЛЮЧ СОВПАДАЕТ - ВСЕ ОК (НИЧЕГО НЕ ПОКАЗЫВАЕМ)
+    If savedActivationKey = currentComputerID Then
+        Debug.Print "КЛЮЧ СОВПАДАЕТ - ДОСТУП РАЗРЕШЕН"
+        ' НИКАКОГО СООБЩЕНИЯ - ПРОСТО ЗАПУСКАЕМ ПРОГРАММУ
+        Exit Sub
+    End If
+    
+    ' ВАРИАНТ 3: КЛЮЧ НЕ СОВПАДАЕТ - КОПИРОВАНИЕ!
+    Debug.Print "ОБНАРУЖЕНО КОПИРОВАНИЕ!"
+    MsgBox "ОШИБКА АКТИВАЦИИ" & vbCrLf & vbCrLf & _
+           "Обнаружена попытка несанкционированного копирования программы." & vbCrLf & vbCrLf & _
+           "----------------------------------------" & vbCrLf & _
+           "Программа уже активирована на другом компьютере." & vbCrLf & _
+           "Дата первоначальной активации: " & activationDate & vbCrLf & _
+           "----------------------------------------" & vbCrLf & vbCrLf & _
+           "Для получения новой лицензии обратитесь к поставщику ПО." & vbCrLf & vbCrLf & _
+           "Программа будет закрыта.", vbCritical, "Ошибка лицензии"
+    
+    Debug.Print "ЗАКРЫВАЕМ БАЗУ ДАННЫХ"
+    Application.Quit
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка тестирования системы защиты: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########            ПРОСТАЯ ГЕНЕРАЦИЯ КЛЮЧА             ########
+'################################################################
+Public Function GenerateActivationKey(computerID As String) As String
+    On Error GoTo ErrorHandler
+    
+    Dim baseString As String
+    Dim codeString As String
+    Dim part1 As String, part2 As String, part3 As String, part4 As String
+    
+    ' СОЗДАЕМ БАЗОВУЮ СТРОКУ
+    baseString = computerID & "DP2024" & GetComputerName()
+    
+    ' ПРЕОБРАЗУЕМ В КОД
+    codeString = StringToCode(baseString)
+    
+    ' РАЗБИВАЕМ НА 4 ЧАСТИ
+    part1 = Mid(codeString, 1, 4)
+    part2 = Mid(codeString, 5, 4)
+    part3 = Mid(codeString, 9, 4)
+    part4 = Mid(codeString, 13, 4)
+    
+    GenerateActivationKey = part1 & "-" & part2 & "-" & part3 & "-" & part4
+    Exit Function
+    
+ErrorHandler:
+    GenerateActivationKey = "1A2B-3C4D-5E6F-7G8H"
+End Function
+
+'################################################################
+'########        ФОРМАТИРОВАНИЕ КЛЮЧА             ########
+'################################################################
+Private Function FormatActivationKey(rawKey As String) As String
+    On Error GoTo ErrorHandler
+    
+    Dim result As String
+    Dim i As Integer
+    
+    ' БЕРЕМ ПЕРВЫЕ 16 СИМВОЛОВ И ФОРМАТИРУЕМ
+    rawKey = Left(rawKey & "0000000000000000", 16)
+    
+    result = ""
+    For i = 1 To 16
+        result = result & Mid(rawKey, i, 1)
+        If i Mod 4 = 0 And i < 16 Then
+            result = result & "-"
+        End If
+    Next i
+    
+    FormatActivationKey = UCase(result)
+    Exit Function
+    
+ErrorHandler:
+    FormatActivationKey = "XXXX-XXXX-XXXX-XXXX"
+End Function
+
+'################################################################
+'########            ПРОСТАЯ ПРОВЕРКА КЛЮЧА              ########
+'################################################################
+Public Function ValidateActivationKey(inputKey As String, computerID As String) As Boolean
+    On Error GoTo ErrorHandler
+    
+    Dim expectedKey As String
+    
+    expectedKey = GenerateActivationKey(computerID)
+    ValidateActivationKey = (inputKey = expectedKey)
+    Exit Function
+    
+ErrorHandler:
+    ValidateActivationKey = False
+End Function
+
+
+'################################################################
+'########        ТЕСТ ГЕНЕРАЦИИ КЛЮЧА             ########
+'################################################################
+Public Sub TestActivationKey()
+    On Error GoTo ErrorHandler
+    
+    Dim computerID As String
+    Dim activationKey As String
+    Dim testInput As String
+    
+    ' ПОЛУЧАЕМ COMPUTER ID
+    computerID = GenerateComputerID()
+    
+    ' ГЕНЕРИРУЕМ КЛЮЧ АКТИВАЦИИ
+    activationKey = GenerateActivationKey(computerID)
+    
+    ' ТЕСТИРУЕМ ПРОВЕРКУ КЛЮЧА
+    testInput = activationKey
+    Dim isValid As Boolean
+    isValid = ValidateActivationKey(testInput, computerID)
+    
+    ' ВЫВОДИМ РЕЗУЛЬТАТЫ
+    Debug.Print "========================================"
+    Debug.Print "ТЕСТ ГЕНЕРАЦИИ КЛЮЧА АКТИВАЦИИ"
+    Debug.Print "========================================"
+    Debug.Print "Computer ID: " & computerID
+    Debug.Print "Ключ активации: " & activationKey
+    Debug.Print "Проверка ключа: " & IIf(isValid, "УСПЕХ", "ОШИБКА")
+    Debug.Print "========================================"
+    
+    ' ПОКАЗЫВАЕМ ПОЛЬЗОВАТЕЛЮ
+    Dim message As String
+    message = "Computer ID: " & computerID & vbCrLf & _
+              "Ключ активации: " & activationKey & vbCrLf & _
+              "Проверка: " & IIf(isValid, "? УСПЕШНО", "? ОШИБКА")
+    
+    MsgBox message, vbInformation, "Тест генерации ключа"
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка тестирования генерации ключа: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########        ДИАГНОСТИКА ОШИБКИ ХЭША         ########
+'################################################################
+Public Sub DebugHashError()
+    On Error GoTo ErrorHandler
+    
+    Dim computerName As String
+    Dim macAddress As String
+    Dim diskSerial As String
+    Dim rawID As String
+    
+    ' ТЕСТИРУЕМ КАЖДУЮ ФУНКЦИЮ ОТДЕЛЬНО
+    computerName = GetComputerName()
+    Debug.Print "Компьютер: " & computerName
+    
+    macAddress = GetMACAddress()
+    Debug.Print "MAC: " & macAddress
+    
+    diskSerial = GetDiskSerial()
+    Debug.Print "Диск: " & diskSerial
+    
+    ' ПРОВЕРЯЕМ СЫРУЮ СТРОКУ ДЛЯ ХЭША
+    rawID = macAddress & "|" & diskSerial & "|" & computerName
+    Debug.Print "Сырой ID: " & rawID
+    
+    ' ПРОВЕРЯЕМ ХЭШИРОВАНИЕ
+    Dim testHash As String
+    testHash = AdvancedHash("test")
+    Debug.Print "Тестовый хэш: " & testHash
+    
+    Exit Sub
+    
+ErrorHandler:
+    Debug.Print "Ошибка диагностики: " & Err.Description
+End Sub
+
+'################################################################
+'########    АЛЬТЕРНАТИВНЫЙ МЕТОД ЧЕРЕЗ WMI      ########
+'################################################################
+Public Function GetDiskSerialWMI() As String
+    On Error GoTo ErrorHandler
+    
+    Dim wmi As Object
+    Dim disks As Object
+    Dim disk As Object
+    
+    Set wmi = GetObject("winmgmts:\\.\root\cimv2")
+    Set disks = wmi.ExecQuery("SELECT * FROM Win32_LogicalDisk WHERE DeviceID = 'C:'")
+    
+    For Each disk In disks
+        GetDiskSerialWMI = disk.VolumeSerialNumber
+        Exit For
+    Next disk
+    
+    If GetDiskSerialWMI = "" Then GetDiskSerialWMI = "NoDiskSerial"
+    Exit Function
+    
+ErrorHandler:
+    GetDiskSerialWMI = "WMISerialError"
+End Function
+
+'################################################################
+'########        НАДЕЖНЫЙ COMPUTER ID            ########
+'################################################################
+Public Function GenerateReliableComputerID() As String
+    On Error GoTo ErrorHandler
+    
+    Dim mac As String
+    Dim computerName As String
+    Dim userName As String
+    Dim diskSerial As String
+    
+    mac = GetMACAddress()
+    computerName = GetComputerName()
+    userName = Environ("USERNAME")
+    diskSerial = GetDiskSerial()
+    
+    ' ЕСЛИ ДИСК НЕ РАБОТАЕТ - ИСПОЛЬЗУЕМ ТОЛЬКО MAC И ИМЕНА
+    If diskSerial = "DiskError" Or diskSerial = "ErrorSerial" Then
+        GenerateReliableComputerID = AdvancedHash(mac & "|" & computerName & "|" & userName)
+    Else
+        GenerateReliableComputerID = AdvancedHash(mac & "|" & diskSerial & "|" & computerName)
+    End If
+    
+    Exit Function
+    
+ErrorHandler:
+    GenerateReliableComputerID = "ReliableID_Error"
+End Function
+
+Sub TestDiskMethods()
+    Debug.Print "FSO метод: " & GetDiskSerial()
+    Debug.Print "WMI метод: " & GetDiskSerialWMI()
+    Debug.Print "Надежный ID: " & GenerateReliableComputerID()
+End Sub
+
+'################################################################
+'########        ДИАГНОСТИКА ХЭШ-ФУНКЦИИ         ########
+'################################################################
+Public Sub DebugHashFunction()
+    On Error GoTo ErrorHandler
+    
+    Dim testString As String
+    Dim result As String
+    
+    ' ТЕСТ 1: ПРОСТАЯ СТРОКА
+    testString = "hello"
+    result = AdvancedHash(testString)
+    Debug.Print "Тест 'hello': " & result
+    
+    ' ТЕСТ 2: С ИСПОЛЬЗОВАНИЕМ ВАШИХ ДАННЫХ
+    testString = "02:50:3E:81:5F:A7|FAB43E03|FENIX-COMP"
+    result = AdvancedHash(testString)
+    Debug.Print "Тест ваших данных: " & result
+    
+    ' ТЕСТ 3: ПУСТАЯ СТРОКА
+    testString = ""
+    result = AdvancedHash(testString)
+    Debug.Print "Тест пустой строки: " & result
+    
+    Exit Sub
+    
+ErrorHandler:
+    Debug.Print "Ошибка в хэш-функции: " & Err.Description & " (строка: " & testString & ")"
+End Sub
+
+'################################################################
+'########             УЛУЧШЕННАЯ ХЭШ-ФУНКЦИЯ             ########
+'################################################################
+Private Function AdvancedHash(inputText As String) As String
+    On Error GoTo ErrorHandler
+    
+    Dim hash As Object
+    Set hash = CreateObject("System.Security.Cryptography.SHA256Managed")
+    
+    Dim bytes() As Byte
+    bytes = StrConv(inputText, vbFromUnicode)
+    
+    Dim hashedBytes() As Byte
+    hashedBytes = hash.ComputeHash_2(bytes)
+    
+    Dim result As String
+    result = ""
+    For i = LBound(hashedBytes) To UBound(hashedBytes)
+        result = result & Right("00" & Hex(hashedBytes(i)), 2)
+    Next i
+    
+    AdvancedHash = result
+    Exit Function
+    
+ErrorHandler:
+    AdvancedHash = "HASHERROR"
+End Function
+
+'################################################################
+'########    ПРЕОБРАЗОВАНИЕ СТРОКИ В КОД         ########
+'################################################################
+Private Function StringToCode(inputText As String) As String
+    On Error GoTo ErrorHandler
+    
+    Dim i As Integer
+    Dim result As String
+    Dim charCode As Integer
+    
+    result = ""
+    
+    For i = 1 To Len(inputText)
+        charCode = Asc(Mid(inputText, i, 1))
+        ' ПРЕОБРАЗУЕМ КОД СИМВОЛА В HEX И БЕРЕМ ПОСЛЕДНИЕ 2 СИМВОЛА
+        result = result & Right("00" & Hex(charCode), 2)
+    Next i
+    
+    ' ЕСЛИ СЛИШКОМ ДЛИННО - ОБРЕЗАЕМ, ЕСЛИ КОРОТКО - ДОБАВЛЯЕМ
+    If Len(result) > 16 Then
+        result = Left(result, 16)
+    ElseIf Len(result) < 16 Then
+        result = result & String(16 - Len(result), "A")
+    End If
+    
+    StringToCode = result
+    Exit Function
+    
+ErrorHandler:
+    StringToCode = "1234567890ABCDEF"
+End Function
+
+Sub TestSimpleSystem()
+    Dim computerID As String
+    Dim activationKey As String
+    
+    ' ИСПОЛЬЗУЕМ ВАШ РАБОЧИЙ COMPUTER ID
+    computerID = "0000BDD5"
+    activationKey = GenerateActivationKey(computerID)
+    
+    Debug.Print "Computer ID: " & computerID
+    Debug.Print "Ключ: " & activationKey
+    Debug.Print "Проверка: " & ValidateActivationKey(activationKey, computerID)
+    
+    ' ТЕСТИРУЕМ ПРЕОБРАЗОВАНИЕ
+    Debug.Print "Тест преобразования: " & StringToCode("test")
+End Sub
+
+'################################################################
+'########        СОХРАНЕНИЕ НАСТРОЙКИ ЛИЦЕНЗИИ   ########
+'################################################################
+Public Sub SaveLicenseSetting(settingName As String, settingValue As String)
+    On Error GoTo ErrorHandler
+    
+    Dim db As DAO.Database
+    Set db = CurrentDb
+    
+    ' УДАЛЯЕМ СТАРУЮ ЗАПИСЬ ЕСЛИ ЕСТЬ
+    db.Execute "DELETE FROM tbSettings WHERE SettingName = '" & settingName & "'"
+    
+    ' ДОБАВЛЯЕМ НОВУЮ ЗАПИСЬ
+    db.Execute "INSERT INTO tbSettings (SettingName, SettingValue) " & _
+               "VALUES ('" & settingName & "', '" & Replace(settingValue, "'", "''") & "')"
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка сохранения настройки лицензии: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########        ЗАГРУЗКА НАСТРОЙКИ ЛИЦЕНЗИИ     ########
+'################################################################
+Public Function LoadLicenseSetting(settingName As String) As String
+    On Error GoTo ErrorHandler
+    
+    Dim db As DAO.Database
+    Dim rs As DAO.Recordset
+    
+    Set db = CurrentDb
+    
+    ' ИЩЕМ НАСТРОЙКУ В ТАБЛИЦЕ
+    Set rs = db.OpenRecordset("SELECT SettingValue FROM tbSettings WHERE SettingName = '" & settingName & "'")
+    
+    If Not rs.EOF Then
+        LoadLicenseSetting = Nz(rs!settingValue, "")
+    Else
+        LoadLicenseSetting = ""
+    End If
+    
+    rs.Close
+    Exit Function
+    
+ErrorHandler:
+    LoadLicenseSetting = ""
+End Function
+
+'################################################################
+'########         ОБНОВЛЕННАЯ ПРОВЕРКА ЛИЦЕНЗИИ          ########
+'################################################################
+Public Sub CheckLicenseOnStartup()
+    On Error GoTo ErrorHandler
+    
+    Dim currentComputerID As String
+    Dim currentFileID As String
+    Dim savedComputerKey As String
+    Dim savedFileKey As String
+    Dim activationDate As String
+    
+    ' ГЕНЕРИРУЕМ ТЕКУЩИЕ ID
+    currentComputerID = GenerateComputerID()
+    currentFileID = GenerateFileID()
+    
+    ' ЗАГРУЖАЕМ СОХРАНЕННЫЕ КЛЮЧИ
+    savedComputerKey = LoadLicenseSetting("ActivationKey")
+    savedFileKey = LoadLicenseSetting("FileSignature")
+    activationDate = LoadLicenseSetting("ActivationDate")
+    
+    ' ВАРИАНТ 1: ПЕРВЫЙ ЗАПУСК (КЛЮЧЕЙ НЕТ)
+    If savedComputerKey = "" Or savedFileKey = "" Then
+        Call SaveLicenseSetting("ActivationKey", currentComputerID)
+        Call SaveLicenseSetting("FileSignature", currentFileID)
+        Call SaveLicenseSetting("ActivationDate", Format(Date, "dd.mm.yyyy"))
+        
+        ' СООБЩЕНИЕ О ПЕРВОМ ЗАПУСКЕ
+        MsgBox "=== ПЕРВЫЙ ЗАПУСК ===" & vbCrLf & vbCrLf & _
+               "Программа успешно активирована на этом компьютере." & vbCrLf & _
+               "Лицензия зарегистрирована автоматически." & vbCrLf & vbCrLf & _
+               "*********************************" & vbCrLf & _
+               " ***** Добро пожаловать! *****" & vbCrLf & _
+               "*********************************", _
+               vbInformation, "Активация выполнена"
+        Exit Sub
+    End If
+    
+    ' ВАРИАНТ 2: ВСЕ КЛЮЧИ СОВПАДАЮТ - ВСЕ ОК
+    If savedComputerKey = currentComputerID And savedFileKey = currentFileID Then
+        Exit Sub
+    End If
+    
+    ' ВАРИАНТ 3: КЛЮЧ КОМПЬЮТЕРА НЕ СОВПАДАЕТ
+    If savedComputerKey <> currentComputerID Then
+        MsgBox "ДОСТУП ЗАБЛОКИРОВАН" & vbCrLf & vbCrLf & _
+               "Обнаружена попытка запуска на другом компьютере." & vbCrLf & vbCrLf & _
+               "========================================" & vbCrLf & _
+               "Программа уже активирована на другом ПК." & vbCrLf & _
+               "Дата активации: " & activationDate & vbCrLf & _
+               "========================================" & vbCrLf & vbCrLf & _
+               "Для получения новой лицензии обратитесь к поставщику." & vbCrLf & vbCrLf & _
+               "Программа будет закрыта.", vbCritical, "Ошибка: Другой компьютер"
+        Application.Quit
+        Exit Sub
+    End If
+    
+    ' ВАРИАНТ 4: КЛЮЧ ФАЙЛА НЕ СОВПАДАЕТ (ФАЙЛ СКОПИРОВАН)
+    If savedFileKey <> currentFileID Then
+        MsgBox "ДОСТУП ЗАБЛОКИРОВАН" & vbCrLf & vbCrLf & _
+               "Обнаружена копия программы." & vbCrLf & vbCrLf & _
+               "========================================" & vbCrLf & _
+               "Этот файл был скопирован или перемещен." & vbCrLf & _
+               "Оригинальная версия активирована: " & activationDate & vbCrLf & _
+               "========================================" & vbCrLf & vbCrLf & _
+               "Для восстановления доступа запустите оригинальный файл" & vbCrLf & _
+               "или обратитесь к поставщику." & vbCrLf & vbCrLf & _
+               "Программа будет закрыта.", vbCritical, "Ошибка: Копия файла"
+        Application.Quit
+        Exit Sub
+    End If
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка проверки лицензии: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########        ДИАГНОСТИКА GenerateComputerID ########
+'################################################################
+Sub DebugGenerateComputerID()
+    On Error GoTo ErrorHandler
+    
+    Dim mac As String, disk As String, computer As String
+    Dim rawID As String, hashedID As String
+    
+    ' ТЕСТИРУЕМ КАЖДУЮ ФУНКЦИЮ ОТДЕЛЬНО
+    Debug.Print "=== ДИАГНОСТИКА GenerateComputerID ==="
+    
+    mac = GetMACAddress()
+    Debug.Print "1. GetMACAddress() = " & mac
+    
+    disk = GetDiskSerial()
+    Debug.Print "2. GetDiskSerial() = " & disk
+    
+    computer = GetComputerName()
+    Debug.Print "3. GetComputerName() = " & computer
+    
+    rawID = mac & "|" & disk & "|" & computer
+    Debug.Print "4. rawID = " & rawID
+    
+    hashedID = AdvancedHash(rawID)
+    Debug.Print "5. AdvancedHash(rawID) = " & hashedID
+    
+    Debug.Print "=== ДИАГНОСТИКА ЗАВЕРШЕНА ==="
+    Exit Sub
+    
+ErrorHandler:
+    Debug.Print "? ОШИБКА на шаге: " & Err.Description
+End Sub
+
+'################################################################
+'########        ИСПРАВЛЕННАЯ ИНИЦИАЛИЗАЦИЯ ЛИЦЕНЗИИ     ########
+'################################################################
+Public Sub InitializeLicense()
+    On Error GoTo ErrorHandler
+    
+    Dim computerID As String
+    Dim currentDate As String
+    
+    ' ЕСЛИ ЛИЦЕНЗИЯ УЖЕ ИНИЦИАЛИЗИРОВАНА - ВЫХОДИМ
+    If LoadLicenseSetting("FirstRunDate") <> "" Then
+        Debug.Print "Лицензия уже инициализирована ранее"
+        Exit Sub
+    End If
+    
+    ' ГЕНЕРИРУЕМ COMPUTER ID
+    computerID = GenerateComputerID()
+    currentDate = Format(Date, "dd.mm.yyyy")
+    
+    ' СОХРАНЯЕМ ДАННЫЕ ЛИЦЕНЗИИ
+    Call SaveLicenseSetting("ComputerID", computerID)
+    Call SaveLicenseSetting("FirstRunDate", currentDate)
+    Call SaveLicenseSetting("IsActivated", "False")
+    Call SaveLicenseSetting("DaysUsed", "0")
+    Call SaveLicenseSetting("LastRunDate", currentDate)
+    
+    ' Также сохраняем в поля для системы защиты
+    Call SaveLicenseSetting("ActivationKey", computerID)
+    Call SaveLicenseSetting("ActivationDate", currentDate)
+    
+    Debug.Print "Лицензия инициализирована. Computer ID: " & computerID
+    Debug.Print "Дата активации: " & currentDate
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка инициализации лицензии: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########        ТЕСТ ЛИЦЕНЗИОННОЙ СИСТЕМЫ      ########
+'################################################################
+Public Sub TestLicenseSystem()
+    ' ИНИЦИАЛИЗИРУЕМ ЛИЦЕНЗИЮ
+    Call InitializeLicense
+    
+    ' ПРОВЕРЯЕМ СОХРАНЕННЫЕ ДАННЫЕ
+    Debug.Print "Computer ID: " & LoadLicenseSetting("ComputerID")
+    Debug.Print "Дата первого запуска: " & LoadLicenseSetting("FirstRunDate")
+    Debug.Print "Активирована: " & LoadLicenseSetting("IsActivated")
+    Debug.Print "Дней использовано: " & LoadLicenseSetting("DaysUsed")
+    
+    ' ТЕСТИРУЕМ ОБНОВЛЕНИЕ ДАННЫХ
+    Call SaveLicenseSetting("DaysUsed", "5")
+    Debug.Print "Обновленные дни: " & LoadLicenseSetting("DaysUsed")
+End Sub

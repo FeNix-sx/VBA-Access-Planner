@@ -1,0 +1,478 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Form_frmDayEvents"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+'################################################################
+'########        ОБНОВЛЕНИЕ ФОРМЫ ПРИ ЗАГРУЗКЕ          ########
+'################################################################
+Private Sub Form_Load()
+    On Error GoTo ErrorHandler
+    
+    ' Загружаем список исполнителей
+    LoadExecutorsCombo
+    
+    ' Устанавливаем оптимальный размер формы через DoCmd.MoveSize
+    DoCmd.MoveSize , , 18500, 10000  ' width, height в twips
+    
+    ' Центрируем форму на экране (упрощенный вариант)
+    DoCmd.MoveSize 6000, 5000  ' Простая позиция вместо сложного центрирования
+    
+    ' ВКЛЮЧАЕМ РЕЖИМ ПРОСМОТРА ПРИ ЗАГРУЗКЕ
+    SwitchToViewMode
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка загрузки формы: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########        НАСТРОЙКА РАЗМЕРА ПРИ ОТКРЫТИИ         ########
+'################################################################
+Private Sub Form_Open(Cancel As Integer)
+    On Error GoTo ErrorHandler
+    
+    ' Простая настройка размера
+    DoCmd.MoveSize , , 19500, 9000
+    
+    ' ?? ВКЛЮЧАЕМ РЕЖИМ ПРОСМОТРА ПРИ ОТКРЫТИИ ??
+    SwitchToViewMode
+    
+    Exit Sub
+    
+ErrorHandler:
+    ' Пропускаем ошибки размера
+End Sub
+
+'################################################################
+'########              НАВИГАЦИЯ ПО ДНЯМ                 ########
+'################################################################
+Private Sub cmdPrevDay_Click()
+    On Error GoTo ErrorHandler
+    Dim labelText As String
+    labelText = Replace(Me.lblDate.Caption, " г.", "")
+    Me.lblDate.Caption = Format(DateAdd("d", -1, CDate(labelText)), "d mmmm yyyy ""г.""")
+    LoadDayEvents
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка перехода к предыдущему дню: " & Err.Description, vbCritical
+End Sub
+
+Private Sub cmdNextDay_Click()
+    On Error GoTo ErrorHandler
+    Dim labelText As String
+    labelText = Replace(Me.lblDate.Caption, " г.", "")
+    Me.lblDate.Caption = Format(DateAdd("d", 1, CDate(labelText)), "d mmmm yyyy ""г.""")
+    LoadDayEvents
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка перехода к следующему дню: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########           ЗАГРУЗКА СОБЫТИЙ ДНЯ               ########
+'################################################################
+Private Sub LoadDayEvents()
+    On Error GoTo ErrorHandler
+    Dim currentDate As Date
+    currentDate = CDate(Replace(Me.lblDate.Caption, " г.", ""))
+    
+    Me.RecordSource = "SELECT * FROM tbEventInstances WHERE EventDate = " & _
+                      Format(currentDate, "\#mm\/dd\/yyyy\#")
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка загрузки событий дня: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########           КНОПКА ЗАКРЫТЬ ФОРМУ                 ########
+'################################################################
+Private Sub cmdClose_Click()
+    On Error GoTo ErrorHandler
+    DoCmd.Close acForm, "frmDayEvents"
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка закрытия формы: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########        ПЕРЕКЛЮЧЕНИЕ РЕЖИМОВ (ОБНОВЛЕНО)       ########
+'################################################################
+Private Sub SwitchToViewMode()
+    ' Режим просмотра
+    Me.AllowEdits = False
+    Me.AllowAdditions = False
+    Me.AllowDeletions = False
+    Me.txtCompletionMark.Locked = True
+    Me.cboExecutor.Locked = True
+    Me.txtBasic.Locked = True
+    Me.txtBasisAttachment.Locked = True
+    Me.cmdEdit.Visible = True
+    Me.cmdEdit.SetFocus
+    Me.cmdSave.Visible = False
+    Me.cmdBrowseFile.Visible = False
+    Me.cmdBrowseBasisAttachment.Visible = False
+    Me.lblBrowse.Visible = False
+End Sub
+
+Private Sub SwitchToEditMode()
+    ' Режим редактирования
+    Me.AllowEdits = True
+    Me.AllowAdditions = True
+    Me.AllowDeletions = True
+    Me.txtCompletionMark.Locked = False
+    Me.cboExecutor.Locked = False
+    Me.txtBasic.Locked = False
+    Me.txtBasisAttachment.Locked = False
+    Me.cmdSave.Visible = True
+    Me.cmdSave.SetFocus
+    Me.cmdEdit.Visible = False
+    Me.cmdBrowseFile.Visible = True
+    Me.cmdBrowseBasisAttachment.Visible = True
+    Me.lblBrowse.Visible = True
+End Sub
+
+'################################################################
+'########           СТИЛЬ РЕЖИМА ПРОСМОТРА               ########
+'################################################################
+Private Sub ApplyViewStyle()
+    On Error GoTo ErrorHandler
+    Dim ctrl As Control
+    For Each ctrl In Me.Controls
+        If TypeOf ctrl Is TextBox Or TypeOf ctrl Is ComboBox Then
+            ctrl.FontItalic = False
+            ctrl.FontBold = False
+            ctrl.ForeColor = RGB(0, 0, 0) ' Черный цвет
+        End If
+    Next ctrl
+    Exit Sub
+    
+ErrorHandler:
+    ' Пропускаем ошибки стилей - не критично
+End Sub
+
+'################################################################
+'########           СТИЛЬ РЕЖИМА РЕДАКТИРОВАНИЯ          ########
+'################################################################
+Private Sub ApplyEditStyle()
+    On Error GoTo ErrorHandler
+    Dim ctrl As Control
+    For Each ctrl In Me.Controls
+        If TypeOf ctrl Is TextBox Or TypeOf ctrl Is ComboBox Then
+            ctrl.FontItalic = True
+            ctrl.FontBold = True
+            ctrl.ForeColor = RGB(0, 0, 128) ' Темно-синий цвет
+        End If
+    Next ctrl
+    Exit Sub
+    
+ErrorHandler:
+    ' Пропускаем ошибки стилей - не критично
+End Sub
+
+'################################################################
+'########           КНОПКА РЕДАКТИРОВАТЬ                 ########
+'################################################################
+Private Sub cmdEdit_Click()
+    On Error GoTo ErrorHandler
+    SwitchToEditMode
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка перехода в режим редактирования: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########            КНОПКА СОХРАНИТЬ                    ########
+'################################################################
+Private Sub cmdSave_Click()
+    On Error GoTo ErrorHandler
+    ' Сохраняем изменения
+    If Me.Dirty Then
+        Me.Dirty = False
+    End If
+    
+    ' Возвращаем в режим просмотра
+    SwitchToViewMode
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка сохранения данных: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########           ОБНОВЛЕНИЕ КАЛЕНДАРЯ                 ########
+'################################################################
+Private Sub Form_Close()
+    On Error GoTo ErrorHandler
+    ' Обновляем основную форму календаря
+    If CurrentProject.AllForms("f_daily_planner").IsLoaded Then
+        Form_f_daily_planner.BuildCalendar
+    End If
+    Exit Sub
+    
+ErrorHandler:
+    ' Пропускаем ошибку обновления календаря - не критично
+End Sub
+
+'################################################################
+'########            АВТОМАТИЧЕСКАЯ ДАТА                 ########
+'################################################################
+Private Sub Form_BeforeInsert(Cancel As Integer)
+    On Error GoTo ErrorHandler
+    ' Автоматически заполняем дату события при добавлении новой записи
+    If Not IsNull(Me.OpenArgs) Then
+        Me.EventDate = CDate(Me.OpenArgs)
+    Else
+        ' Если дата не передана, используем дату из заголовка
+        Me.EventDate = CDate(Replace(Me.lblDate.Caption, " г.", ""))
+    End If
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка установки даты события: " & Err.Description, vbCritical
+    Cancel = True
+End Sub
+
+'################################################################
+'########           ОТКРЫТИЕ ПРИЛОЖЕННОГО ФАЙЛА          ########
+'################################################################
+Private Sub cmdOpenFile_Click()
+    On Error GoTo ErrorHandler
+    
+    If Not IsNull(Me.AttachmentPath) And Me.AttachmentPath <> "" Then
+        ' Проверяем существует ли файл
+        If Dir(Me.AttachmentPath) <> "" Then
+            ' Показываем уведомление о начале открытия
+            DoCmd.Hourglass True
+            Me.cmdOpenFile.Caption = "Открывается..."
+            Me.cmdOpenFile.Enabled = False
+            Me.Repaint
+            
+            ' Открываем файл
+            FollowHyperlink Me.AttachmentPath
+            
+            ' Восстанавливаем кнопку
+            Me.cmdOpenFile.Caption = "Открыть файл"
+            Me.cmdOpenFile.Enabled = True
+            DoCmd.Hourglass False
+        Else
+            MsgBox "Файл не найден: " & Me.AttachmentPath, vbExclamation
+        End If
+    End If
+    Exit Sub
+    
+ErrorHandler:
+    ' Восстанавливаем кнопку при ошибке
+    Me.cmdOpenFile.Caption = "Открыть файл"
+    Me.cmdOpenFile.Enabled = True
+    DoCmd.Hourglass False
+    MsgBox "Ошибка открытия файла: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########          ОБНОВЛЕНИЕ СОСТОЯНИЯ ФОРМЫ           ########
+'################################################################
+Private Sub Form_Current()
+    On Error GoTo ErrorHandler
+    ' Обновляем стили в зависимости от режима
+    If Me.AllowEdits Then
+        ApplyEditStyle
+    Else
+        ApplyViewStyle
+    End If
+    Exit Sub
+    
+ErrorHandler:
+    ' Пропускаем ошибки обновления стилей - не критично
+End Sub
+
+'################################################################
+'########          ОБРАБОТКА ОТМЕТКИ ВЫПОЛНЕНИЯ         ########
+'################################################################
+Private Sub txtCompletionMark_AfterUpdate()
+    On Error GoTo ErrorHandler
+    ' Если отметка заполнена впервые - ставим CompletionDate
+    If Not IsNull(Me.txtCompletionMark) And Me.txtCompletionMark <> "" Then
+        If IsNull(Me.txtCompletionDate) Then
+            Me.txtCompletionDate = Date
+        End If
+        ' Всегда обновляем LastModified при изменении отметки
+        Me.txtLastModified = Now()
+    Else
+        ' Если отметку очистили - сбрасываем даты
+        Me.txtCompletionDate = Null
+        Me.txtLastModified = Now()
+    End If
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка при обновлении отметки: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########           ОТКРЫТИЕ ФАЙЛА ИЛИ ПАПКИ             ########
+'################################################################
+Private Sub txtAttachmentPath_DblClick(Cancel As Integer)
+    On Error GoTo ErrorHandler
+    
+    If Not IsNull(Me.txtAttachmentPath) And Me.txtAttachmentPath <> "" Then
+        ' Проверяем существует ли файл или папка
+        If Dir(Me.txtAttachmentPath, vbDirectory) <> "" Then
+            ' Показываем уведомление о начале открытия
+            DoCmd.Hourglass True
+            Me.Repaint
+            
+            ' Открываем файл или папку
+            FollowHyperlink Me.txtAttachmentPath
+            
+            DoCmd.Hourglass False
+        Else
+            MsgBox "Файл или папка не найдены: " & Me.txtAttachmentPath, vbExclamation
+        End If
+    End If
+    Exit Sub
+    
+ErrorHandler:
+    ' Восстанавливаем цвет при ошибке
+    Me.txtAttachmentPath.BackColor = RGB(255, 255, 255)
+    DoCmd.Hourglass False
+    MsgBox "Ошибка открытия файла/папки: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########          ВЫБОР ФАЙЛА ИЛИ ПАПКИ               ########
+'################################################################
+Private Sub cmdBrowseFile_Click()
+    On Error GoTo ErrorHandler
+    ' Открываем форму выбора с параметром "Main"
+    DoCmd.OpenForm "frmFileFolderSelector", , , , , acDialog, "Main"
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка открытия формы выбора файла: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########           ЗАГРУЗКА ИСПОЛНИТЕЛЕЙ В КОМБОБОКС   ########
+'################################################################
+Private Sub LoadExecutorsCombo()
+    On Error GoTo ErrorHandler
+    
+    Me.cboExecutor.RowSource = "SELECT ID, LastName & ' ' & Left(FirstName,1) & '.' & Left(MiddleName,1) & '.' AS FullName " & _
+                              "FROM tbExecutors WHERE ID IS NOT NULL ORDER BY SortOrder, LastName, FirstName"
+    Me.cboExecutor.ColumnCount = 2
+    Me.cboExecutor.BoundColumn = 1
+    Me.cboExecutor.ColumnWidths = "0;4см"
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка загрузки списка исполнителей: " & Err.Description, vbExclamation
+End Sub
+
+'################################################################
+'########     ОТКРЫТИЕ ФАЙЛА ОСНОВАНИЯ ПО ДВОЙНОМУ КЛИКУ ########
+'################################################################
+Private Sub txtBasisAttachment_DblClick(Cancel As Integer)
+    On Error GoTo ErrorHandler
+    
+    If Not IsNull(Me.txtBasisAttachment) And Me.txtBasisAttachment <> "" Then
+        ' Проверяем существует ли файл или папка
+        If Dir(Me.txtBasisAttachment, vbDirectory) <> "" Then
+            ' Показываем уведомление о начале открытия
+            DoCmd.Hourglass True
+            Me.Repaint
+            
+            ' Открываем файл или папку
+            FollowHyperlink Me.txtBasisAttachment
+            
+            DoCmd.Hourglass False
+        Else
+            MsgBox "Файл или папка не найдены: " & Me.txtBasisAttachment, vbExclamation
+        End If
+    End If
+    Exit Sub
+    
+ErrorHandler:
+    ' Восстанавливаем цвет при ошибке
+    Me.txtBasisAttachment.BackColor = RGB(255, 255, 255)
+    DoCmd.Hourglass False
+    MsgBox "Ошибка открытия файла/папки основания: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########        ВЫБОР ФАЙЛА ОСНОВАНИЯ                 ########
+'################################################################
+Private Sub cmdBrowseBasisAttachment_Click()
+    On Error GoTo ErrorHandler
+    ' Открываем форму выбора с параметром "Basis"
+    DoCmd.OpenForm "frmFileFolderSelector", , , , , acDialog, "Basis"
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка выбора файла основания: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########      ОТМЕТИТЬ ВСЕ КАК ВЫПОЛНЕННЫЕ           ########
+'################################################################
+Private Sub cmdMarkAllComplete_Click()
+    On Error GoTo ErrorHandler
+    
+    If MsgBox("Отметить все события этого дня как выполненные?", vbQuestion + vbYesNo) = vbYes Then
+        Dim currentDate As Date
+        currentDate = CDate(Replace(Me.lblDate.Caption, " г.", ""))
+        
+        CurrentDb.Execute "UPDATE tbEventInstances SET " & _
+                         "CompletionMark = 'Выполнено', " & _
+                         "CompletionDate = Date(), " & _
+                         "LastModified = Now() " & _
+                         "WHERE EventDate = #" & Format(currentDate, "yyyy\/mm\/dd") & "#"
+        
+        Me.Requery
+        MsgBox "Все события отмечены как выполненные!", vbInformation
+    End If
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка массового обновления: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########          СНЯТЬ ВСЕ ОТМЕТКИ                  ########
+'################################################################
+Private Sub cmdUnmarkAll_Click()
+    On Error GoTo ErrorHandler
+    
+    If MsgBox("Снять все отметки о выполнении за этот день?", vbQuestion + vbYesNo) = vbYes Then
+        Dim currentDate As Date
+        currentDate = CDate(Replace(Me.lblDate.Caption, " г.", ""))
+        
+        CurrentDb.Execute "UPDATE tbEventInstances SET " & _
+                         "CompletionMark = Null, " & _
+                         "CompletionDate = Null, " & _
+                         "LastModified = Now() " & _
+                         "WHERE EventDate = #" & Format(currentDate, "yyyy\/mm\/dd") & "#"
+        
+        Me.Requery
+        MsgBox "Все отметки о выполнении сняты!", vbInformation
+    End If
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Ошибка массового обновления: " & Err.Description, vbCritical
+End Sub

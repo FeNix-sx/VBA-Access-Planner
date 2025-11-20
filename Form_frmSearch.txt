@@ -1,0 +1,257 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Form_frmSearch"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+'################################################################
+'########            гюцпсгйю тнплш онхяйю               ########
+'################################################################
+Private Sub Form_Load()
+    ' гюцпсфюел хяонкмхрекеи б йнлананйя
+    LoadExecutorsCombo
+    
+    ' гюцпсфюел ярюрсяш бшонкмемхъ
+    LoadStatusCombo
+    
+    ' гюцпсфюел тхкэрп он бкнфемхъл
+    LoadAttachmentCombo
+    
+    ' сярюмюбкхбюел мювюкэмши SQL аег ID
+    Me.RecordSource = "SELECT ei.EventDate, ei.EventNote, " & _
+                     "e.LastName & ' ' & Left(e.FirstName,1) & '.' & Left(e.MiddleName,1) & '.' AS ExecutorName, " & _
+                     "ei.CompletionMark, ei.AttachmentPath " & _
+                     "FROM tbEventInstances ei " & _
+                     "LEFT JOIN tbExecutors e ON ei.ExecutorID = e.ID " & _
+                     "ORDER BY ei.EventDate DESC"
+    
+    Me.Requery
+End Sub
+
+'################################################################
+'########         гюцпсгйю йнлананйяю хяонкмхрекеи       ########
+'################################################################
+Private Sub LoadExecutorsCombo()
+    On Error GoTo ErrorHandler
+    
+    Dim db As DAO.Database
+    Dim rs As DAO.Recordset
+    Dim executorList As String
+    
+    Set db = CurrentDb
+    Set rs = db.OpenRecordset("SELECT LastName & ' ' & Left(FirstName,1) & '.' & Left(MiddleName,1) & '.' AS FullName " & _
+                             "FROM tbExecutors WHERE ID IS NOT NULL ORDER BY LastName, FirstName")
+    
+    ' янгдюел яохянй гмювемхи
+    executorList = "бЯЕ ХЯОНКМХРЕКХ"
+    
+    Do While Not rs.EOF
+        executorList = executorList & ";" & rs!FullName
+        rs.MoveNext
+    Loop
+    
+    ' сярюмюбкхбюел хярнвмхй дюммшу
+    Me.cboSearchExecutor.RowSourceType = "Value List"
+    Me.cboSearchExecutor.RowSource = executorList
+    Me.cboSearchExecutor.Value = "бЯЕ ХЯОНКМХРЕКХ"
+    
+    rs.Close
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "нЬХАЙЮ ГЮЦПСГЙХ ХЯОНКМХРЕКЕИ: " & Err.Description, vbExclamation
+    If Not rs Is Nothing Then rs.Close
+End Sub
+
+'################################################################
+'########          гюцпсгйю йнлананйяю ярюрсянб          ########
+'################################################################
+Private Sub LoadStatusCombo()
+    Me.cboCompletionStatus.RowSourceType = "Value List"
+    Me.cboCompletionStatus.RowSource = "бЯЕ ЯРЮРСЯШ;бШОНКМЕМН;мЕ БШОНКМЕМН"
+    Me.cboCompletionStatus.Value = "бЯЕ ЯРЮРСЯШ"
+End Sub
+
+'################################################################
+'########         гюцпсгйю йнлананйяю "еярэ бкнфемхъ"    ########
+'################################################################
+Private Sub LoadAttachmentCombo()
+    Me.cboHasAttachment.RowSourceType = "Value List"
+    Me.cboHasAttachment.RowSource = "мЕ БЮФМН;еЯРЭ БКНФЕМХЪ;мЕР БКНФЕМХИ"
+    Me.cboHasAttachment.Value = "мЕ БЮФМН"
+End Sub
+
+'################################################################
+'########          ймнойю "яапняхрэ" - яапня тхкэрпнб    ########
+'################################################################
+Private Sub cmdReset_Click()
+    ' яапюяшбюел бяе онкъ онхяйю
+    Me.txtSearchText = ""
+    Me.dtStartDate = Null
+    Me.dtEndDate = Null
+    Me.cboSearchExecutor = "бЯЕ ХЯОНКМХРЕКХ"
+    Me.cboCompletionStatus = "бЯЕ ЯРЮРСЯШ"
+    Me.cboHasAttachment = "мЕ БЮФМН"
+    
+    ' сярюмюбкхбюел SQL аег онкъ ID
+    Me.RecordSource = "SELECT ei.EventDate, ei.EventNote, " & _
+                     "e.LastName & ' ' & Left(e.FirstName,1) & '.' & Left(e.MiddleName,1) & '.' AS ExecutorName, " & _
+                     "ei.CompletionMark, ei.AttachmentPath " & _
+                     "FROM tbEventInstances ei " & _
+                     "LEFT JOIN tbExecutors e ON ei.ExecutorID = e.ID " & _
+                     "ORDER BY ei.EventDate DESC"
+    
+    Me.Requery
+End Sub
+
+'################################################################
+'########          ймнойю "мюирх" - онхяй янашрхи        ########
+'################################################################
+Private Sub cmdSearch_Click()
+    On Error GoTo ErrorHandler
+    
+    Dim sqlWhere As String
+    Dim sql As String
+    
+    ' тнплхпсел сякнбхъ WHERE
+    sqlWhere = BuildSearchConditions
+    
+    ' тнплхпсел онкмши SQL гюопня аег ID
+    sql = "SELECT ei.EventDate, ei.EventNote, " & _
+          "e.LastName & ' ' & Left(e.FirstName,1) & '.' & Left(e.MiddleName,1) & '.' AS ExecutorName, " & _
+          "ei.CompletionMark, ei.AttachmentPath " & _
+          "FROM tbEventInstances ei " & _
+          "LEFT JOIN tbExecutors e ON ei.ExecutorID = e.ID "
+    
+    If sqlWhere <> "" Then
+        sql = sql & " WHERE " & sqlWhere
+    End If
+    
+    sql = sql & " ORDER BY ei.EventDate DESC"
+    
+    ' сярюмюбкхбюел хярнвмхй дюммшу дкъ тнплш
+    Me.RecordSource = sql
+    Me.Requery
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "нЬХАЙЮ БШОНКМЕМХЪ ОНХЯЙЮ: " & Err.Description, vbCritical
+End Sub
+
+'################################################################
+'########          онярпнемхе сякнбхи онхяйю             ########
+'################################################################
+Private Function BuildSearchConditions() As String
+    Dim conditions As String
+    conditions = ""
+    
+    ' сякнбхе он рейярс янашрхъ
+    If Not IsNull(Me.txtSearchText) And Me.txtSearchText <> "" Then
+        If conditions <> "" Then conditions = conditions & " AND "
+        conditions = conditions & "ei.EventNote LIKE '*" & Replace(Me.txtSearchText, "'", "''") & "*'"
+    End If
+    
+    ' сякнбхе он оепхндс дюр
+    If Not IsNull(Me.dtStartDate) And Me.dtStartDate <> "" Then
+        If conditions <> "" Then conditions = conditions & " AND "
+        conditions = conditions & "ei.EventDate >= #" & Format(Me.dtStartDate, "yyyy-mm-dd") & "#"
+    End If
+    
+    If Not IsNull(Me.dtEndDate) And Me.dtEndDate <> "" Then
+        If conditions <> "" Then conditions = conditions & " AND "
+        conditions = conditions & "ei.EventDate <= #" & Format(Me.dtEndDate, "yyyy-mm-dd") & "#"
+    End If
+    
+    ' сякнбхе он хяонкмхрекч
+    If Me.cboSearchExecutor <> "бЯЕ ХЯОНКМХРЕКХ" Then
+        If conditions <> "" Then conditions = conditions & " AND "
+        conditions = conditions & "e.LastName & ' ' & Left(e.FirstName,1) & '.' & Left(e.MiddleName,1) & '.' = '" & Replace(Me.cboSearchExecutor, "'", "''") & "'"
+    End If
+    
+    ' сякнбхе он ярюрсяс бшонкмемхъ
+    If Me.cboCompletionStatus <> "бЯЕ ЯРЮРСЯШ" Then
+        If conditions <> "" Then conditions = conditions & " AND "
+        If Me.cboCompletionStatus = "бШОНКМЕМН" Then
+            conditions = conditions & "(ei.CompletionMark IS NOT NULL AND ei.CompletionMark <> '')"
+        Else
+            conditions = conditions & "(ei.CompletionMark IS NULL OR ei.CompletionMark = '')"
+        End If
+    End If
+    
+    ' сякнбхе он мюкхвхч бкнфемхи
+    If Me.cboHasAttachment <> "мЕ БЮФМН" Then
+        If conditions <> "" Then conditions = conditions & " AND "
+        If Me.cboHasAttachment = "еЯРЭ БКНФЕМХЪ" Then
+            conditions = conditions & "(ei.AttachmentPath IS NOT NULL AND ei.AttachmentPath <> '')"
+        Else
+            conditions = conditions & "(ei.AttachmentPath IS NULL OR ei.AttachmentPath = '')"
+        End If
+    End If
+    
+    BuildSearchConditions = conditions
+End Function
+
+'################################################################
+'########          дбнимни йкхй он дюре янашрхъ          ########
+'################################################################
+Private Sub resEventDate_DblClick(Cancel As Integer)
+    OpenDayFromSearch
+End Sub
+
+'################################################################
+'########         дбнимни йкхй он рейярс янашрхъ         ########
+'################################################################
+Private Sub resEventNote_DblClick(Cancel As Integer)
+    OpenDayFromSearch
+End Sub
+
+'################################################################
+'########         дбнимни йкхй он хяонкмхрекч            ########
+'################################################################
+Private Sub resExecutor_DblClick(Cancel As Integer)
+    OpenDayFromSearch
+End Sub
+
+'################################################################
+'########          дбнимни йкхй он ярюрсяс               ########
+'################################################################
+Private Sub resStatus_DblClick(Cancel As Integer)
+    OpenDayFromSearch
+End Sub
+
+'################################################################
+'########       нрйпшрхе тнплш дмъ хг пегскэрюрнб        ########
+'################################################################
+Private Sub OpenDayFromSearch()
+    On Error GoTo ErrorHandler
+    
+    If Not IsNull(Me.EventDate) Then
+        ' нрйпшбюел тнплс дмъ я мсфмни дюрни
+        DoCmd.OpenForm "frmDayEvents"
+        
+        ' сярюмюбкхбюел тхкэрп мю дюрс янашрхъ
+        Forms!frmDayEvents.RecordSource = "SELECT * FROM tbEventInstances WHERE EventDate = #" & _
+                                          Format(Me.EventDate, "yyyy-mm-dd") & "#"
+        Forms!frmDayEvents.lblDate.Caption = Format(Me.EventDate, "d mmmm yyyy ""Ц.""")
+    Else
+        MsgBox "мЕ СДЮКНЯЭ НОПЕДЕКХРЭ ДЮРС ЯНАШРХЪ", vbExclamation
+    End If
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "нЬХАЙЮ НРЙПШРХЪ ЯНАШРХЪ: " & Err.Description, vbExclamation
+End Sub
+
+'################################################################
+'########          ?????? "???????"                   ########
+'################################################################
+Private Sub cmdClose_Click()
+    DoCmd.Close acForm, Me.Name
+End Sub
