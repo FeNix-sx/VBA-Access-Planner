@@ -1,0 +1,24 @@
+﻿{
+  "formName": "frmAdmin",
+  "recordSource": "",
+  "controls": [
+    {
+      "name": "cmdAdmin",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdOffAdmin",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+
+  ]
+}

@@ -1,0 +1,728 @@
+# Справочник: русские подписи окна свойств MS Access → имена свойств/событий в VBA.
+# Версия интерфейса: русская локаль Office (подписи могут слегка отличаться по версии).
+# Дополняйте объекты по мере появления скриншотов вкладок «Данные» и полного списка «События».
+
+meta:
+  title: Access — свойства и события (RU → EN)
+  format: yaml
+  notes:
+    - Вкладка «Все» — объединение Макет + Данные + События + Другие; отдельного набора свойств нет.
+    - Для элементов без привязки к данным вкладка «Данные» часто пустая или минимальная.
+    - Свойства `en` взяты из VBA/объектной модели; `ru` — по возможности сверено со скринами RU Office (см. verified_from_user_screen в объектах).
+    - На флажке в окне свойств строки «Отступ …» у вас соответствуют полям VBA Margin (TopMargin и т.д.) — на других элементах те же слова могут означать Padding; ориентируйтесь на столбец en.
+    - Объекты «Форма» и разделы выбираются щелчком по серой полоске раздела / пустому месту формы в конструкторе; в VBA объект раздела — Section.Parent = Form.
+
+section_tabs:
+  format: { ru: Макет, en: Format }
+  data: { ru: Данные, en: Data }
+  event: { ru: События, en: Event }
+  other: { ru: Другие, en: Other }
+  all: { ru: Все, en: All }
+
+# Если в вашем Access подпись другая — пришлите скрин только указанной вкладки (не всего окна свойств).
+needs_screenshot_if_ru_mismatch:
+  - { object_ru: Поле, section: Данные, hint: Если подпись у ControlSource не «Источник элемента управления» — пришлите скрин. }
+  - { object_ru: Поле со списком, section: Данные, hint: Источник строк, тип источника, ограничение списком, разрешить правки списка значений. }
+  - { object_ru: Кнопка, section: Макет, hint: Цвета наведения/нажатия, тема, указатель при наведении — если версия Office без этих строк. }
+  - { object_ru: любой, section: Макет, hint: Редкие свойства IME, смарт-теги, специфичные для версии. }
+  - { object_ru: Форма / разделы формы, section: любая, hint: Много строк и синонимов (Режим по умолчанию, Источник записей); при споре — скрин окна свойств. }
+
+objects:
+
+  - object:
+      ru: Надпись
+      en: Label
+      vba_type: Label
+      ac_control_type: acLabel
+
+    sections:
+
+      format:
+        properties:
+          - { ru: Подпись, en: Caption, kind: property }
+          - { ru: Вывод на экран, en: Visible, kind: property }
+          - { ru: Ширина, en: Width, kind: property }
+          - { ru: Высота, en: Height, kind: property }
+          - { ru: От верхнего края, en: Top, kind: property }
+          - { ru: От левого края, en: Left, kind: property }
+          - { ru: Тип фона, en: BackStyle, kind: property }
+          - { ru: Цвет фона, en: BackColor, kind: property }
+          - { ru: Тип границы, en: BorderStyle, kind: property }
+          - { ru: Ширина границы, en: BorderWidth, kind: property }
+          - { ru: Цвет границы, en: BorderColor, kind: property }
+          - { ru: Оформление, en: SpecialEffect, kind: property }
+          - { ru: Шрифт, en: FontName, kind: property }
+          - { ru: Размер шрифта, en: FontSize, kind: property }
+          - { ru: Выравнивание текста, en: TextAlign, kind: property }
+          - { ru: Насыщенность, en: FontWeight, kind: property }
+          - { ru: Подчеркнутый, en: FontUnderline, kind: property }
+          - { ru: Курсив, en: FontItalic, kind: property }
+          - { ru: Цвет текста, en: ForeColor, kind: property }
+          - { ru: Междустрочный интервал, en: LineSpacing, kind: property }
+          - { ru: Адрес гиперссылки, en: HyperlinkAddress, kind: property }
+          - { ru: Дополнительный адрес, en: HyperlinkSubAddress, kind: property }
+          - { ru: Объект гиперссылки, en: HyperlinkObject, kind: property }
+          - { ru: Стиль линий сетки сверху, en: GridlineStyleTop, kind: property }
+          - { ru: Стиль линий сетки снизу, en: GridlineStyleBottom, kind: property }
+          - { ru: Стиль линий сетки слева, en: GridlineStyleLeft, kind: property }
+          - { ru: Стиль линий сетки справа, en: GridlineStyleRight, kind: property }
+          - { ru: Ширина линий сетки сверху, en: GridlineWidthTop, kind: property }
+          - { ru: Ширина линий сетки снизу, en: GridlineWidthBottom, kind: property }
+          - { ru: Ширина линий сетки слева, en: GridlineWidthLeft, kind: property }
+          - { ru: Ширина линий сетки справа, en: GridlineWidthRight, kind: property }
+          - { ru: Верхнее поле, en: TopMargin, kind: property }
+          - { ru: Нижнее поле, en: BottomMargin, kind: property }
+          - { ru: Левое поле, en: LeftMargin, kind: property }
+          - { ru: Правое поле, en: RightMargin, kind: property }
+          - { ru: Отступ сверху, en: TopPadding, kind: property }
+          - { ru: Отступ снизу, en: BottomPadding, kind: property }
+          - { ru: Отступ слева, en: LeftPadding, kind: property }
+          - { ru: Отступ справа, en: RightPadding, kind: property }
+          - { ru: Режим вывода, en: DisplayWhen, kind: property }
+          - { ru: Направление чтения, en: ReadingOrder, kind: property }
+          - { ru: Начертание цифр, en: NumeralShapes, kind: property }
+
+      data:
+        note: Для статической надписи вкладка часто без свойств; пришлите скрин — добавим строки.
+        properties: []
+
+      event:
+        properties:
+          - { ru: Вход, en: OnEnter, kind: event }
+          - { ru: Выход, en: OnExit, kind: event }
+          - { ru: Получение фокуса, en: OnGotFocus, kind: event }
+          - { ru: Потеря фокуса, en: OnLostFocus, kind: event }
+          - { ru: Нажатие кнопки, en: OnClick, kind: event }
+          - { ru: Двойное нажатие кнопки, en: OnDblClick, kind: event }
+          - { ru: Кнопка вниз, en: OnMouseDown, kind: event }
+          - { ru: Кнопка вверх, en: OnMouseUp, kind: event }
+          - { ru: Перемещение указателя, en: OnMouseMove, kind: event }
+          - { ru: Клавиша вниз, en: OnKeyDown, kind: event }
+          - { ru: Клавиша вверх, en: OnKeyUp, kind: event }
+          - { ru: Нажатие клавиши, en: OnKeyPress, kind: event }
+
+      other:
+        properties:
+          - { ru: Имя, en: Name, kind: property }
+          - { ru: Всплывающая подсказка, en: ControlTipText, kind: property }
+          - { ru: Контекстное меню, en: ShortcutMenuBar, kind: property }
+          - { ru: Идентификатор справки, en: HelpContextId, kind: property }
+          - { ru: По вертикали, en: Vertical, kind: property }
+          - { ru: Дополнительные сведения, en: Tag, kind: property }
+
+  - object:
+      ru: Поле
+      en: Text box
+      vba_type: TextBox
+      ac_control_type: acTextBox
+
+    sections:
+
+      format:
+        properties:
+          - { ru: Формат, en: Format, kind: property }
+          - { ru: Число десятичных знаков, en: DecimalPlaces, kind: property }
+          - { ru: Вывод на экран, en: Visible, kind: property }
+          - { ru: Полосы прокрутки, en: ScrollBars, kind: property }
+          - { ru: Ширина, en: Width, kind: property }
+          - { ru: Высота, en: Height, kind: property }
+          - { ru: От верхнего края, en: Top, kind: property }
+          - { ru: От левого края, en: Left, kind: property }
+          - { ru: Тип фона, en: BackStyle, kind: property }
+          - { ru: Цвет фона, en: BackColor, kind: property }
+          - { ru: Тип границы, en: BorderStyle, kind: property }
+          - { ru: Ширина границы, en: BorderWidth, kind: property }
+          - { ru: Цвет границы, en: BorderColor, kind: property }
+          - { ru: Оформление, en: SpecialEffect, kind: property }
+          - { ru: Шрифт, en: FontName, kind: property }
+          - { ru: Размер шрифта, en: FontSize, kind: property }
+          - { ru: Выравнивание текста, en: TextAlign, kind: property }
+          - { ru: Насыщенность, en: FontWeight, kind: property }
+          - { ru: Подчеркнутый, en: FontUnderline, kind: property }
+          - { ru: Курсив, en: FontItalic, kind: property }
+          - { ru: Цвет текста, en: ForeColor, kind: property }
+          - { ru: Междустрочный интервал, en: LineSpacing, kind: property }
+          - { ru: Поле гиперссылки, en: IsHyperlink, kind: property }
+          - { ru: Адрес гиперссылки, en: HyperlinkAddress, kind: property }
+          - { ru: Дополнительный адрес, en: HyperlinkSubAddress, kind: property }
+          - { ru: Стиль линий сетки сверху, en: GridlineStyleTop, kind: property }
+          - { ru: Стиль линий сетки снизу, en: GridlineStyleBottom, kind: property }
+          - { ru: Стиль линий сетки слева, en: GridlineStyleLeft, kind: property }
+          - { ru: Стиль линий сетки справа, en: GridlineStyleRight, kind: property }
+          - { ru: Ширина линий сетки сверху, en: GridlineWidthTop, kind: property }
+          - { ru: Ширина линий сетки снизу, en: GridlineWidthBottom, kind: property }
+          - { ru: Ширина линий сетки слева, en: GridlineWidthLeft, kind: property }
+          - { ru: Ширина линий сетки справа, en: GridlineWidthRight, kind: property }
+          - { ru: Верхнее поле, en: TopMargin, kind: property }
+          - { ru: Нижнее поле, en: BottomMargin, kind: property }
+          - { ru: Левое поле, en: LeftMargin, kind: property }
+          - { ru: Правое поле, en: RightMargin, kind: property }
+          - { ru: Отступ сверху, en: TopPadding, kind: property }
+          - { ru: Отступ снизу, en: BottomPadding, kind: property }
+          - { ru: Отступ слева, en: LeftPadding, kind: property }
+          - { ru: Отступ справа, en: RightPadding, kind: property }
+          - { ru: Режим вывода, en: DisplayWhen, kind: property }
+          - { ru: Направление чтения, en: ReadingOrder, kind: property }
+          - { ru: Начертание цифр, en: NumeralShapes, kind: property }
+
+      data:
+        properties:
+          - { ru: Источник элемента управления, en: ControlSource, kind: property }
+          - { ru: Маска ввода, en: InputMask, kind: property }
+          - { ru: Значение по умолчанию, en: DefaultValue, kind: property }
+          - { ru: Условие на значение, en: ValidationRule, kind: property }
+          - { ru: Сообщение об ошибке, en: ValidationText, kind: property }
+          - { ru: Включена, en: Enabled, kind: property }
+          - { ru: Блокировка, en: Locked, kind: property }
+          - { ru: Поиск при фильтрации, en: FilterLookup, kind: property }
+
+      event:
+        properties:
+          - { ru: До обновления, en: BeforeUpdate, kind: event }
+          - { ru: После обновления, en: AfterUpdate, kind: event }
+          - { ru: Изменение, en: OnChange, kind: event }
+          - { ru: Вход, en: OnEnter, kind: event }
+          - { ru: Выход, en: OnExit, kind: event }
+          - { ru: Получение фокуса, en: OnGotFocus, kind: event }
+          - { ru: Потеря фокуса, en: OnLostFocus, kind: event }
+          - { ru: Нажатие кнопки, en: OnClick, kind: event }
+          - { ru: Двойное нажатие кнопки, en: OnDblClick, kind: event }
+          - { ru: Кнопка вниз, en: OnMouseDown, kind: event }
+          - { ru: Кнопка вверх, en: OnMouseUp, kind: event }
+          - { ru: Перемещение указателя, en: OnMouseMove, kind: event }
+          - { ru: Клавиша вниз, en: OnKeyDown, kind: event }
+          - { ru: Клавиша вверх, en: OnKeyUp, kind: event }
+          - { ru: Нажатие клавиши, en: OnKeyPress, kind: event }
+
+      other:
+        properties:
+          - { ru: Имя, en: Name, kind: property }
+          - { ru: Текст строки состояния, en: StatusBarText, kind: property }
+          - { ru: Порядок перехода по Tab, en: TabIndex, kind: property }
+          - { ru: Переход по Tab, en: TabStop, kind: property }
+          - { ru: Поведение клавиши Enter, en: EnterKeyBehavior, kind: property }
+          - { ru: Автозамена, en: AllowAutoCorrect, kind: property }
+          - { ru: Автоматическая табуляция, en: AutoTab, kind: property }
+          - { ru: Всплывающая подсказка, en: ControlTipText, kind: property }
+          - { ru: Контекстное меню, en: ShortcutMenuBar, kind: property }
+          - { ru: Идентификатор справки, en: HelpContextId, kind: property }
+          - { ru: Дополнительные сведения, en: Tag, kind: property }
+
+  - object:
+      ru: Флажок
+      en: Check box
+      vba_type: CheckBox
+      ac_control_type: acCheckBox
+      verified_from_user_screen: true
+
+    sections:
+
+      format:
+        properties:
+          - { ru: Вывод на экран, en: Visible, kind: property }
+          - { ru: Ширина, en: Width, kind: property }
+          - { ru: Высота, en: Height, kind: property }
+          - { ru: От верхнего края, en: Top, kind: property }
+          - { ru: От левого края, en: Left, kind: property }
+          - { ru: Тип границы, en: BorderStyle, kind: property }
+          - { ru: Ширина границы, en: BorderWidth, kind: property }
+          - { ru: Цвет границы, en: BorderColor, kind: property }
+          - { ru: Оформление, en: SpecialEffect, kind: property }
+          - { ru: Стиль линий сетки сверху, en: GridlineStyleTop, kind: property }
+          - { ru: Стиль линий сетки снизу, en: GridlineStyleBottom, kind: property }
+          - { ru: Стиль линий сетки слева, en: GridlineStyleLeft, kind: property }
+          - { ru: Стиль линий сетки справа, en: GridlineStyleRight, kind: property }
+          - { ru: Ширина линий сетки сверху, en: GridlineWidthTop, kind: property }
+          - { ru: Ширина линий сетки снизу, en: GridlineWidthBottom, kind: property }
+          - { ru: Ширина линий сетки слева, en: GridlineWidthLeft, kind: property }
+          - { ru: Ширина линий сетки справа, en: GridlineWidthRight, kind: property }
+          - { ru: Отступ сверху, en: TopMargin, kind: property }
+          - { ru: Отступ снизу, en: BottomMargin, kind: property }
+          - { ru: Отступ слева, en: LeftMargin, kind: property }
+          - { ru: Отступ справа, en: RightMargin, kind: property }
+          - { ru: Привязка по горизонтали, en: HorizontalAnchor, kind: property }
+          - { ru: Привязка по вертикали, en: VerticalAnchor, kind: property }
+          - { ru: Режим вывода, en: DisplayWhen, kind: property }
+          - { ru: Направление чтения, en: ReadingOrder, kind: property }
+
+      data:
+        properties:
+          - { ru: Данные, en: ControlSource, kind: property }
+          - { ru: Тройное состояние, en: TripleState, kind: property }
+          - { ru: Название таблицы, en: TableName, kind: property }
+          - { ru: Значение по умолчанию, en: DefaultValue, kind: property }
+          - { ru: Правило проверки, en: ValidationRule, kind: property }
+          - { ru: Сообщение об ошибке, en: ValidationText, kind: property }
+          - { ru: Включена, en: Enabled, kind: property }
+          - { ru: Блокировка, en: Locked, kind: property }
+
+      event:
+        properties:
+          - { ru: Нажатие кнопки, en: OnClick, kind: event }
+          - { ru: До обновления, en: BeforeUpdate, kind: event }
+          - { ru: После обновления, en: AfterUpdate, kind: event }
+          - { ru: Получение фокуса, en: OnGotFocus, kind: event }
+          - { ru: Потеря фокуса, en: OnLostFocus, kind: event }
+          - { ru: Двойное нажатие кнопки, en: OnDblClick, kind: event }
+          - { ru: Кнопка вниз, en: OnMouseDown, kind: event }
+          - { ru: Кнопка вверх, en: OnMouseUp, kind: event }
+          - { ru: Перемещение указателя, en: OnMouseMove, kind: event }
+          - { ru: Клавиша вниз, en: OnKeyDown, kind: event }
+          - { ru: Клавиша вверх, en: OnKeyUp, kind: event }
+          - { ru: Нажатие клавиши, en: OnKeyPress, kind: event }
+          - { ru: Вход, en: OnEnter, kind: event }
+          - { ru: Выход, en: OnExit, kind: event }
+
+      other:
+        properties:
+          - { ru: Имя, en: Name, kind: property }
+          - { ru: Имя метки, en: LabelName, kind: property }
+          - { ru: Всплывающая подсказка, en: ControlTipText, kind: property }
+          - { ru: Порядок перехода по Tab, en: TabIndex, kind: property }
+          - { ru: Переход по Tab, en: TabStop, kind: property }
+          - { ru: Текст строки состояния, en: StatusBarText, kind: property }
+          - { ru: Контекстное меню, en: ShortcutMenuBar, kind: property }
+          - { ru: Идентификатор справки, en: HelpContextId, kind: property }
+          - { ru: Дополнительные сведения, en: Tag, kind: property }
+
+  - object:
+      ru: Поле со списком
+      en: Combo box
+      vba_type: ComboBox
+      ac_control_type: acComboBox
+      verified_from_user_screen: true
+
+    sections:
+
+      format:
+        properties:
+          - { ru: Формат, en: Format, kind: property }
+          - { ru: Число десятичных знаков, en: DecimalPlaces, kind: property }
+          - { ru: Вывод на экран, en: Visible, kind: property }
+          - { ru: Полосы прокрутки, en: ScrollBars, kind: property }
+          - { ru: Число столбцов, en: ColumnCount, kind: property }
+          - { ru: Ширина столбцов, en: ColumnWidths, kind: property }
+          - { ru: Заголовки столбцов, en: ColumnHeads, kind: property }
+          - { ru: Число строк списка, en: ListRows, kind: property }
+          - { ru: Ширина списка, en: ListWidth, kind: property }
+          - { ru: Ширина, en: Width, kind: property }
+          - { ru: Высота, en: Height, kind: property }
+          - { ru: От верхнего края, en: Top, kind: property }
+          - { ru: От левого края, en: Left, kind: property }
+          - { ru: Тип фона, en: BackStyle, kind: property }
+          - { ru: Цвет фона, en: BackColor, kind: property }
+          - { ru: Тип границы, en: BorderStyle, kind: property }
+          - { ru: Ширина границы, en: BorderWidth, kind: property }
+          - { ru: Цвет границы, en: BorderColor, kind: property }
+          - { ru: Оформление, en: SpecialEffect, kind: property }
+          - { ru: Шрифт, en: FontName, kind: property }
+          - { ru: Размер шрифта, en: FontSize, kind: property }
+          - { ru: Выравнивание текста, en: TextAlign, kind: property }
+          - { ru: Насыщенность, en: FontWeight, kind: property }
+          - { ru: Подчеркнутый, en: FontUnderline, kind: property }
+          - { ru: Курсив, en: FontItalic, kind: property }
+          - { ru: Цвет текста, en: ForeColor, kind: property }
+          - { ru: Междустрочный интервал, en: LineSpacing, kind: property }
+          - { ru: Поле гиперссылки, en: IsHyperlink, kind: property }
+          - { ru: Адрес гиперссылки, en: HyperlinkAddress, kind: property }
+          - { ru: Дополнительный адрес, en: HyperlinkSubAddress, kind: property }
+          - { ru: Стиль линий сетки сверху, en: GridlineStyleTop, kind: property }
+          - { ru: Стиль линий сетки снизу, en: GridlineStyleBottom, kind: property }
+          - { ru: Стиль линий сетки слева, en: GridlineStyleLeft, kind: property }
+          - { ru: Стиль линий сетки справа, en: GridlineStyleRight, kind: property }
+          - { ru: Ширина линий сетки сверху, en: GridlineWidthTop, kind: property }
+          - { ru: Ширина линий сетки снизу, en: GridlineWidthBottom, kind: property }
+          - { ru: Ширина линий сетки слева, en: GridlineWidthLeft, kind: property }
+          - { ru: Ширина линий сетки справа, en: GridlineWidthRight, kind: property }
+          - { ru: Верхнее поле, en: TopMargin, kind: property }
+          - { ru: Нижнее поле, en: BottomMargin, kind: property }
+          - { ru: Левое поле, en: LeftMargin, kind: property }
+          - { ru: Правое поле, en: RightMargin, kind: property }
+          - { ru: Отступ сверху, en: TopPadding, kind: property }
+          - { ru: Отступ снизу, en: BottomPadding, kind: property }
+          - { ru: Отступ слева, en: LeftPadding, kind: property }
+          - { ru: Отступ справа, en: RightPadding, kind: property }
+          - { ru: Привязка по горизонтали, en: HorizontalAnchor, kind: property }
+          - { ru: Привязка по вертикали, en: VerticalAnchor, kind: property }
+          - { ru: Расширение, en: CanGrow, kind: property }
+          - { ru: Сжатие, en: CanShrink, kind: property }
+          - { ru: Режим вывода, en: DisplayWhen, kind: property }
+          - { ru: Направление чтения, en: ReadingOrder, kind: property }
+          - { ru: Начертание цифр, en: NumeralShapes, kind: property }
+
+      data:
+        properties:
+          - { ru: Источник элемента управления, en: ControlSource, kind: property }
+          - { ru: Источник строк, en: RowSource, kind: property }
+          - { ru: Тип источника строк, en: RowSourceType, kind: property }
+          - { ru: Присоединенный столбец, en: BoundColumn, kind: property }
+          - { ru: Ограничиться списком, en: LimitToList, kind: property }
+          - { ru: Разрешить изменение списка зн., en: AllowValueListEdits, kind: property }
+          - { ru: Наследовать список значений, en: InheritValueList, kind: property }
+          - { ru: Только значения источника стр., en: ShowOnlyRowSourceValues, kind: property }
+          - { ru: Включена, en: Enabled, kind: property }
+          - { ru: Блокировка, en: Locked, kind: property }
+          - { ru: Автоподстановка, en: AutoExpand, kind: property }
+          - { ru: Маска ввода, en: InputMask, kind: property }
+          - { ru: Значение по умолчанию, en: DefaultValue, kind: property }
+          - { ru: Условие на значение, en: ValidationRule, kind: property }
+          - { ru: Сообщение об ошибке, en: ValidationText, kind: property }
+          - { ru: Поиск при фильтрации, en: FilterLookup, kind: property }
+
+      event:
+        note: Порядок и подписи — по скрину «Все». «Отмена» в конце списка событий → OnUndo (не путать со свойством Cancel у кнопки).
+        properties:
+          - { ru: После обновления, en: AfterUpdate, kind: event }
+          - { ru: Нажатие кнопки, en: OnClick, kind: event }
+          - { ru: До обновления, en: BeforeUpdate, kind: event }
+          - { ru: Изменение, en: OnChange, kind: event }
+          - { ru: Отсутствие в списке, en: OnNotInList, kind: event }
+          - { ru: Получение фокуса, en: OnGotFocus, kind: event }
+          - { ru: Потеря фокуса, en: OnLostFocus, kind: event }
+          - { ru: Двойное нажатие кнопки, en: OnDblClick, kind: event }
+          - { ru: Кнопка вниз, en: OnMouseDown, kind: event }
+          - { ru: Кнопка вверх, en: OnMouseUp, kind: event }
+          - { ru: Перемещение указателя, en: OnMouseMove, kind: event }
+          - { ru: Клавиша вниз, en: OnKeyDown, kind: event }
+          - { ru: Клавиша вверх, en: OnKeyUp, kind: event }
+          - { ru: Нажатие клавиши, en: OnKeyPress, kind: event }
+          - { ru: Вход, en: OnEnter, kind: event }
+          - { ru: Выход, en: OnExit, kind: event }
+          - { ru: Отмена, en: OnUndo, kind: event }
+
+      other:
+        properties:
+          - { ru: Имя, en: Name, kind: property }
+          - { ru: Всплывающая подсказка, en: ControlTipText, kind: property }
+          - { ru: Порядок перехода по Tab, en: TabIndex, kind: property }
+          - { ru: Переход по Tab, en: TabStop, kind: property }
+          - { ru: Текст строки состояния, en: StatusBarText, kind: property }
+          - { ru: Контекстное меню, en: ShortcutMenuBar, kind: property }
+          - { ru: Идентификатор справки, en: HelpContextId, kind: property }
+          - { ru: Разрешить автозамену, en: AllowAutoCorrect, kind: property }
+          - { ru: Сохранение режима IME, en: IMEHold, kind: property }
+          - { ru: Режим IME, en: IMEMode, kind: property }
+          - { ru: Режим предложений IME, en: IMESentenceMode, kind: property }
+          - { ru: Поведение клавиши Enter, en: EnterKeyBehavior, kind: property }
+          - { ru: Автоматическая табуляция, en: AutoTab, kind: property }
+          - { ru: Дополнительные сведения, en: Tag, kind: property }
+
+  - object:
+      ru: Кнопка
+      en: Command button
+      vba_type: CommandButton
+      ac_control_type: acCommandButton
+      verified_from_user_screen: true
+
+    sections:
+
+      format:
+        properties:
+          - { ru: Подпись, en: Caption, kind: property }
+          - { ru: Расположение подписи к рисунку, en: PictureCaptionArrangement, kind: property }
+          - { ru: Вывод на экран, en: Visible, kind: property }
+          - { ru: Указатель при наведении, en: CursorOnHover, kind: property }
+          - { ru: Тип рисунка, en: PictureType, kind: property }
+          - { ru: Рисунок, en: Picture, kind: property }
+          - { ru: Положение рисунка, en: PictureAlignment, kind: property }
+          - { ru: Ширина, en: Width, kind: property }
+          - { ru: Высота, en: Height, kind: property }
+          - { ru: От верхнего края, en: Top, kind: property }
+          - { ru: От левого края, en: Left, kind: property }
+          - { ru: Тип фона, en: BackStyle, kind: property }
+          - { ru: Прозрачный, en: Transparent, kind: property }
+          - { ru: Использовать тему, en: UseTheme, kind: property }
+          - { ru: Цвет фона, en: BackColor, kind: property }
+          - { ru: Тип границы, en: BorderStyle, kind: property }
+          - { ru: Ширина границы, en: BorderWidth, kind: property }
+          - { ru: Цвет границы, en: BorderColor, kind: property }
+          - { ru: Оформление, en: SpecialEffect, kind: property }
+          - { ru: Цвет при наведении, en: HoverColor, kind: property }
+          - { ru: Цвет при нажатии, en: PressedColor, kind: property }
+          - { ru: Цвет переднего плана при наведении, en: HoverForeColor, kind: property }
+          - { ru: Цвет переднего плана при нажатии, en: PressedForeColor, kind: property }
+          - { ru: Шрифт, en: FontName, kind: property }
+          - { ru: Размер шрифта, en: FontSize, kind: property }
+          - { ru: Выравнивание, en: TextAlign, kind: property }
+          - { ru: Насыщенность, en: FontWeight, kind: property }
+          - { ru: Подчеркнутый, en: FontUnderline, kind: property }
+          - { ru: Курсив, en: FontItalic, kind: property }
+          - { ru: Цвет текста, en: ForeColor, kind: property }
+          - { ru: Адрес гиперссылки, en: HyperlinkAddress, kind: property }
+          - { ru: Дополнительный адрес, en: HyperlinkSubAddress, kind: property }
+          - { ru: Объект гиперссылки, en: HyperlinkObject, kind: property }
+          - { ru: Стиль линий сетки сверху, en: GridlineStyleTop, kind: property }
+          - { ru: Стиль линий сетки снизу, en: GridlineStyleBottom, kind: property }
+          - { ru: Стиль линий сетки слева, en: GridlineStyleLeft, kind: property }
+          - { ru: Стиль линий сетки справа, en: GridlineStyleRight, kind: property }
+          - { ru: Ширина линий сетки сверху, en: GridlineWidthTop, kind: property }
+          - { ru: Ширина линий сетки снизу, en: GridlineWidthBottom, kind: property }
+          - { ru: Ширина линий сетки слева, en: GridlineWidthLeft, kind: property }
+          - { ru: Ширина линий сетки справа, en: GridlineWidthRight, kind: property }
+          - { ru: Верхнее поле, en: TopMargin, kind: property }
+          - { ru: Нижнее поле, en: BottomMargin, kind: property }
+          - { ru: Левое поле, en: LeftMargin, kind: property }
+          - { ru: Правое поле, en: RightMargin, kind: property }
+          - { ru: Отступ сверху, en: TopPadding, kind: property }
+          - { ru: Отступ снизу, en: BottomPadding, kind: property }
+          - { ru: Отступ слева, en: LeftPadding, kind: property }
+          - { ru: Отступ справа, en: RightPadding, kind: property }
+          - { ru: Привязка по горизонтали, en: HorizontalAnchor, kind: property }
+          - { ru: Привязка по вертикали, en: VerticalAnchor, kind: property }
+          - { ru: Режим вывода, en: DisplayWhen, kind: property }
+          - { ru: Направление чтения, en: ReadingOrder, kind: property }
+          - { ru: Начертание цифр, en: NumeralShapes, kind: property }
+          - { ru: Междустрочный интервал, en: LineSpacing, kind: property }
+
+      data:
+        properties:
+          - { ru: Включена, en: Enabled, kind: property }
+
+      event:
+        properties:
+          - { ru: Нажатие кнопки, en: OnClick, kind: event }
+          - { ru: Получение фокуса, en: OnGotFocus, kind: event }
+          - { ru: Потеря фокуса, en: OnLostFocus, kind: event }
+          - { ru: Двойное нажатие кнопки, en: OnDblClick, kind: event }
+          - { ru: Кнопка вниз, en: OnMouseDown, kind: event }
+          - { ru: Кнопка вверх, en: OnMouseUp, kind: event }
+          - { ru: Перемещение указателя, en: OnMouseMove, kind: event }
+          - { ru: Клавиша вниз, en: OnKeyDown, kind: event }
+          - { ru: Клавиша вверх, en: OnKeyUp, kind: event }
+          - { ru: Нажатие клавиши, en: OnKeyPress, kind: event }
+          - { ru: Вход, en: OnEnter, kind: event }
+          - { ru: Выход, en: OnExit, kind: event }
+
+      other:
+        properties:
+          - { ru: Имя, en: Name, kind: property }
+          - { ru: По умолчанию, en: Default, kind: property }
+          - { ru: Отмена, en: Cancel, kind: property }
+          - { ru: Всплывающая подсказка, en: ControlTipText, kind: property }
+          - { ru: Порядок перехода по Tab, en: TabIndex, kind: property }
+          - { ru: Переход по Tab, en: TabStop, kind: property }
+          - { ru: Текст строки состояния, en: StatusBarText, kind: property }
+          - { ru: Контекстное меню, en: ShortcutMenuBar, kind: property }
+          - { ru: Автоматический повтор, en: AutoRepeat, kind: property }
+          - { ru: Идентификатор справки, en: HelpContextId, kind: property }
+          - { ru: Захват фокуса при щелчке, en: TakeFocusOnClick, kind: property }
+          - { ru: Дополнительные сведения, en: Tag, kind: property }
+
+  - object:
+      ru: Форма
+      en: Form
+      vba_type: Form
+      note: Окно свойств при выбранной форме (не элемент управления).
+
+    sections:
+
+      format:
+        properties:
+          - { ru: Подпись, en: Caption, kind: property }
+          - { ru: Режим по умолчанию, en: DefaultView, kind: property }
+          - { ru: Разрешить режим формы, en: AllowFormView, kind: property }
+          - { ru: Разрешить режим таблицы, en: AllowDatasheetView, kind: property }
+          - { ru: Разрешить режим сводной таблицы, en: AllowPivotTableView, kind: property }
+          - { ru: Разрешить режим сводной диаграммы, en: AllowPivotChartView, kind: property }
+          - { ru: Представления по умолчанию, en: ViewsAllowed, kind: property }
+          - { ru: Ширина, en: Width, kind: property }
+          - { ru: Автоцентрирование, en: AutoCenter, kind: property }
+          - { ru: Рисунок, en: Picture, kind: property }
+          - { ru: Тип рисунка, en: PictureType, kind: property }
+          - { ru: Выравнивание рисунка, en: PictureAlignment, kind: property }
+          - { ru: Режим размеров рисунка, en: PictureSizeMode, kind: property }
+          - { ru: Мозаичное повторение рисунка, en: PictureTiling, kind: property }
+          - { ru: Тип границы, en: BorderStyle, kind: property }
+          - { ru: Кнопки свернуть и развернуть, en: MinMaxButtons, kind: property }
+          - { ru: Кнопка закрытия, en: CloseButton, kind: property }
+          - { ru: Селектор записей, en: RecordSelectors, kind: property }
+          - { ru: Кнопки перемещения, en: NavigationButtons, kind: property }
+          - { ru: Разделительные линии, en: DividingLines, kind: property }
+          - { ru: Полосы прокрутки, en: ScrollBars, kind: property }
+          - { ru: Сетка по X, en: GridX, kind: property }
+          - { ru: Сетка по Y, en: GridY, kind: property }
+          - { ru: Выравнивание по линиям сетки, en: SnapToGrid, kind: property }
+          - { ru: Макет по умолчанию для новых элементов управления, en: LayoutForPrint, kind: property }
+          - { ru: Всплывающее окно, en: Popup, kind: property }
+          - { ru: Модальное окно, en: Modal, kind: property }
+          - { ru: Подгонять размер по содержимому, en: AutoResize, kind: property }
+          - { ru: Подгонка по экрану, en: FitToScreen, kind: property }
+          - { ru: Цвет фона, en: BackColor, kind: property }
+          - { ru: Тип фона, en: BackStyle, kind: property }
+
+      data:
+        properties:
+          - { ru: Источник записей, en: RecordSource, kind: property }
+          - { ru: Фильтр, en: Filter, kind: property }
+          - { ru: Фильтр включен, en: FilterOn, kind: property }
+          - { ru: Упорядочание, en: OrderBy, kind: property }
+          - { ru: Упорядочение включено, en: OrderByOn, kind: property }
+          - { ru: Разрешить добавление, en: AllowAdditions, kind: property }
+          - { ru: Разрешить удаление, en: AllowDeletions, kind: property }
+          - { ru: Разрешить изменения, en: AllowEdits, kind: property }
+          - { ru: Только ввод данных, en: DataEntry, kind: property }
+          - { ru: Тип набора записей, en: RecordsetType, kind: property }
+          - { ru: Блокировки записей, en: RecordLocks, kind: property }
+          - { ru: Время ожидания ODBC, en: ODBCTimeout, kind: property }
+
+      event:
+        properties:
+          - { ru: Текущая запись, en: OnCurrent, kind: event }
+          - { ru: Открытие, en: OnOpen, kind: event }
+          - { ru: Загрузка, en: OnLoad, kind: event }
+          - { ru: Изменение размеров, en: OnResize, kind: event }
+          - { ru: Выгрузка, en: OnUnload, kind: event }
+          - { ru: Закрытие, en: OnClose, kind: event }
+          - { ru: Активация, en: OnActivate, kind: event }
+          - { ru: Деактивация, en: OnDeactivate, kind: event }
+          - { ru: Таймер, en: OnTimer, kind: event }
+          - { ru: До вставки записи, en: BeforeInsert, kind: event }
+          - { ru: После вставки записи, en: AfterInsert, kind: event }
+          - { ru: До подтверждения удаления, en: BeforeDelConfirm, kind: event }
+          - { ru: После подтверждения удаления, en: AfterDelConfirm, kind: event }
+          - { ru: До обновления записи, en: BeforeUpdate, kind: event }
+          - { ru: После обновления записи, en: AfterUpdate, kind: event }
+          - { ru: Внесены изменения, en: OnDirty, kind: event }
+          - { ru: Отмена, en: OnUndo, kind: event }
+          - { ru: Ошибка, en: OnError, kind: event }
+          - { ru: Применение фильтра, en: OnApplyFilter, kind: event }
+          - { ru: Исключение фильтра, en: OnFilter, kind: event }
+          - { ru: Получение фокуса, en: OnGotFocus, kind: event }
+          - { ru: Потеря фокуса, en: OnLostFocus, kind: event }
+          - { ru: Нажатие кнопки, en: OnClick, kind: event }
+          - { ru: Двойное нажатие кнопки, en: OnDblClick, kind: event }
+          - { ru: Кнопка вниз, en: OnMouseDown, kind: event }
+          - { ru: Кнопка вверх, en: OnMouseUp, kind: event }
+          - { ru: Перемещение указателя, en: OnMouseMove, kind: event }
+          - { ru: Клавиша вниз, en: OnKeyDown, kind: event }
+          - { ru: Клавиша вверх, en: OnKeyUp, kind: event }
+          - { ru: Нажатие клавиши, en: OnKeyPress, kind: event }
+
+      other:
+        properties:
+          - { ru: Имя, en: Name, kind: property }
+          - { ru: Дополнительные сведения, en: Tag, kind: property }
+          - { ru: Файл справки, en: HelpFile, kind: property }
+          - { ru: Идентификатор справки, en: HelpContextId, kind: property }
+          - { ru: Контекстное меню, en: ShortcutMenu, kind: property }
+          - { ru: Строка контекстного меню, en: ShortcutMenuBar, kind: property }
+          - { ru: Интервал таймера, en: TimerInterval, kind: property }
+          - { ru: Контур рисования, en: PaintPalette, kind: property }
+          - { ru: Источник палитры, en: PaletteSource, kind: property }
+          - { ru: Быстрая печать лазерного принтера, en: FastLaserPrinting, kind: property }
+          - { ru: Есть модуль, en: HasModule, kind: property }
+          - { ru: Цикл по элементам управления, en: Cycle, kind: property }
+          - { ru: Позиция прокрутки (слева), en: ScrollLeft, kind: property }
+          - { ru: Позиция прокрутки (сверху), en: ScrollTop, kind: property }
+
+  - object:
+      ru: Заголовок формы
+      en: Form Header
+      vba_type: Section
+      ac_section: acFormHeader
+      section_index: 1
+      note: Раздел в конструкторе формы; в VBA Form.Section(acFormHeader).
+
+    sections:
+
+      format:
+        properties:
+          - { ru: Высота раздела, en: Height, kind: property }
+          - { ru: Вывод на экран, en: Visible, kind: property }
+          - { ru: Цвет фона, en: BackColor, kind: property }
+          - { ru: Тип фона, en: BackStyle, kind: property }
+          - { ru: Оформление, en: SpecialEffect, kind: property }
+          - { ru: Режим вывода, en: DisplayWhen, kind: property }
+
+      data:
+        note: Обычно пусто.
+        properties: []
+
+      event:
+        note: У разделов формы набор событий зависит от версии Access; чаще пусто или только мышь/фокус.
+        properties:
+          - { ru: Нажатие кнопки, en: OnClick, kind: event }
+          - { ru: Двойное нажатие кнопки, en: OnDblClick, kind: event }
+          - { ru: Кнопка вниз, en: OnMouseDown, kind: event }
+          - { ru: Кнопка вверх, en: OnMouseUp, kind: event }
+          - { ru: Перемещение указателя, en: OnMouseMove, kind: event }
+
+      other:
+        properties:
+          - { ru: Имя, en: Name, kind: property }
+          - { ru: Дополнительные сведения, en: Tag, kind: property }
+
+  - object:
+      ru: Область данных
+      en: Detail
+      vba_type: Section
+      ac_section: acDetail
+      section_index: 0
+      note: Основной раздел формы; Form.Section(acDetail).
+
+    sections:
+
+      format:
+        properties:
+          - { ru: Высота раздела, en: Height, kind: property }
+          - { ru: Вывод на экран, en: Visible, kind: property }
+          - { ru: Цвет фона, en: BackColor, kind: property }
+          - { ru: Альтернативный цвет фона, en: AlternateBackColor, kind: property }
+          - { ru: Тип фона, en: BackStyle, kind: property }
+          - { ru: Оформление, en: SpecialEffect, kind: property }
+          - { ru: Режим вывода, en: DisplayWhen, kind: property }
+
+      data:
+        note: Обычно пусто.
+        properties: []
+
+      event:
+        note: См. заголовок формы.
+        properties:
+          - { ru: Нажатие кнопки, en: OnClick, kind: event }
+          - { ru: Двойное нажатие кнопки, en: OnDblClick, kind: event }
+          - { ru: Кнопка вниз, en: OnMouseDown, kind: event }
+          - { ru: Кнопка вверх, en: OnMouseUp, kind: event }
+          - { ru: Перемещение указателя, en: OnMouseMove, kind: event }
+
+      other:
+        properties:
+          - { ru: Имя, en: Name, kind: property }
+          - { ru: Дополнительные сведения, en: Tag, kind: property }
+
+  - object:
+      ru: Примечание формы
+      en: Form Footer
+      vba_type: Section
+      ac_section: acFormFooter
+      section_index: 2
+      note: В интерфейсе часто «Область примечания / примечание формы»; Form.Section(acFormFooter).
+
+    sections:
+
+      format:
+        properties:
+          - { ru: Высота раздела, en: Height, kind: property }
+          - { ru: Вывод на экран, en: Visible, kind: property }
+          - { ru: Цвет фона, en: BackColor, kind: property }
+          - { ru: Тип фона, en: BackStyle, kind: property }
+          - { ru: Оформление, en: SpecialEffect, kind: property }
+          - { ru: Режим вывода, en: DisplayWhen, kind: property }
+
+      data:
+        note: Обычно пусто.
+        properties: []
+
+      event:
+        note: См. заголовок формы.
+        properties:
+          - { ru: Нажатие кнопки, en: OnClick, kind: event }
+          - { ru: Двойное нажатие кнопки, en: OnDblClick, kind: event }
+          - { ru: Кнопка вниз, en: OnMouseDown, kind: event }
+          - { ru: Кнопка вверх, en: OnMouseUp, kind: event }
+          - { ru: Перемещение указателя, en: OnMouseMove, kind: event }
+
+      other:
+        properties:
+          - { ru: Имя, en: Name, kind: property }
+          - { ru: Дополнительные сведения, en: Tag, kind: property }

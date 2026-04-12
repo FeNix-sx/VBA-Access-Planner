@@ -1,0 +1,42 @@
+﻿{
+  "formName": "frmThemeSelector",
+  "recordSource": "SELECT tbThemes.* FROM tbThemes; ",
+  "controls": [
+    {
+      "name": "btnApply",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "btnClose",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "lstThemes",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись3",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+
+  ]
+}

@@ -1,0 +1,429 @@
+﻿{
+  "formName": "frmEventGenerator",
+  "recordSource": "SELECT tbTempEvents.* FROM tbTempEvents; ",
+  "controls": [
+    {
+      "name": "cboRule",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 4
+    }
+,
+    {
+      "name": "txtStartDate",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "lblStartDate",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "txtEndDate",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "lblEndDate",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "txtEventText",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 6
+    }
+,
+    {
+      "name": "cmdGenerate",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 11
+    }
+,
+    {
+      "name": "lblEventText",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdClear",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 12
+    }
+,
+    {
+      "name": "Надпись28",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись49",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lblPeriod",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cboPeriodicity",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "",
+      "rowSource": "SELECT PeriodicityID, PeriodicityName FROM tbPeriodicity ORDER BY PeriodicityID; ",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lblPeriodicity",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lblRule",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись231",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка260",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка261",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка267",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка268",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lblDayOfMonth",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cboDayOfMonth",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "",
+      "rowSource": "1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24;25;26;27;28;29;30;31",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "Надпись279",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cboExecutor",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "",
+      "rowSource": "SELECT ID, LastName & ' ' & Left(FirstName,1) & '.' & Left(MiddleName,1) & '.' AS FullName FROM tbExecutors WHERE ID IS NOT NULL ORDER BY SortOrder, LastName, FirstName; ",
+      "tabIndex": 5
+    }
+,
+    {
+      "name": "lblExecutor",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись296",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lblBasisAttachment",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "txtBasisAttachment",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 7
+    }
+,
+    {
+      "name": "lblAttachmentPath",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "txtAttachmentPath",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 9
+    }
+,
+    {
+      "name": "cmdBrowseBasisAttachment",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 8
+    }
+,
+    {
+      "name": "ПустаяЯчейка325",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка327",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка329",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdBrowseAttachment",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 10
+    }
+,
+    {
+      "name": "ПустаяЯчейка332",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись339",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись343",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "txtEventDate",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "EventDate",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "txtEventNote",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "EventNote",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "txtWeekday",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "=Choose(Weekday([EventDate]),\"Вс\",\"Пн\",\"Вт\",\"Ср\",\"Чт\",\"Пт\",\"Сб\")",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "cboExecutorGrid",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "ExecutorID",
+      "rowSource": "SELECT tbExecutors.ID, LastName & ' ' & Left(FirstName,1) & '.' & Left(MiddleName,1) & '.' AS Выражение1 FROM tbExecutors ORDER BY tbExecutors.SortOrder, tbExecutors.LastName; ",
+      "tabIndex": 5
+    }
+,
+    {
+      "name": "txtBasisAttachmentPath",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "BasisAttachment",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "txtAttachment",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "AttachmentPath",
+      "rowSource": "",
+      "tabIndex": 4
+    }
+,
+    {
+      "name": "cmdSave",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lblCount",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdClose",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+
+  ]
+}

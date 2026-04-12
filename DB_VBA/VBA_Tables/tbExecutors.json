@@ -1,0 +1,73 @@
+﻿{
+  "tableName": "tbExecutors",
+  "fields": [
+    {
+      "name": "ID",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 17
+    }
+,
+    {
+      "name": "LastName",
+      "type": 10,
+      "size": 100,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "FirstName",
+      "type": 10,
+      "size": 100,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "MiddleName",
+      "type": 10,
+      "size": 100,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "Position",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "SortOrder",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "Notes",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+
+  ],
+  "indexes": [
+    {
+      "name": "PrimaryKey",
+      "primary": true,
+      "unique": true,
+      "fields": [
+        "ID"
+
+      ]
+    }
+
+  ]
+}

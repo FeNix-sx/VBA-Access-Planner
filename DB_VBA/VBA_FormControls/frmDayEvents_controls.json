@@ -1,0 +1,366 @@
+﻿{
+  "formName": "frmDayEvents",
+  "recordSource": "SELECT * FROM tbEventInstances WHERE EventDate = #10/03/2025#; ",
+  "controls": [
+    {
+      "name": "cmdPrevDay",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdNextDay",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "lbl_Caption",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка13",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка14",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка22",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись46",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись48",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись62",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись87",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись91",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись105",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка109",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка114",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdBrowseFile",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "lblBrowse",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись122",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись130",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись137",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdBrowseBasisAttachment",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "ПустаяЯчейка152",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка154",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка157",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка162",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lblDate",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "txtEventNote",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "EventNote",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "txtNotes",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "Notes",
+      "rowSource": "",
+      "tabIndex": 4
+    }
+,
+    {
+      "name": "txtCompletionDate",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "CompletionDate",
+      "rowSource": "",
+      "tabIndex": 6
+    }
+,
+    {
+      "name": "txtCompletionMark",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "CompletionMark",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "txtAttachmentPath",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "AttachmentPath",
+      "rowSource": "",
+      "tabIndex": 8
+    }
+,
+    {
+      "name": "txtLastModified",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "LastModified",
+      "rowSource": "",
+      "tabIndex": 5
+    }
+,
+    {
+      "name": "txtBasic",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "Basis",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "txtBasisAttachment",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "BasisAttachment",
+      "rowSource": "",
+      "tabIndex": 7
+    }
+,
+    {
+      "name": "cboExecutor",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "ExecutorID",
+      "rowSource": "SELECT ID, LastName & ' ' & FirstName & ' ' & MiddleName AS FullName FROM tbExecutors WHERE ID IS NOT NULL ORDER BY SortOrder, LastName, FirstName; ",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "cmdEdit",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "cmdClose",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "Надпись79",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdSave",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 4
+    }
+,
+    {
+      "name": "cmdMarkAllComplete",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdUnmarkAll",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+
+  ]
+}

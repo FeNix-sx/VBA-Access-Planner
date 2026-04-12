@@ -1,0 +1,82 @@
+Миграция: таблица tbBirthdays (backend) и линк во frontend
+===========================================================
+
+Структура BE: ID (AutoNumber, PK), LastName, FirstName, MiddleName, BirthDate (Date/Time), Notes (Text 255).
+
+Создание таблицы (MigrateEnsureTbBirthdaysTable / CreateBirthdaysTable) выполняется в файле backend.
+Если открыт frontend и заполнена tbTableConnections, путь к BE берётся оттуда (как при подключении таблиц).
+Если открыт только Planner_BE.accdb (без локальной tbTableConnections), используется текущая база.
+
+Важно: если tbBirthdays случайно создали во frontend через старый код, удалите локальную таблицу в FE
+вручную (конструктор таблиц), затем создайте таблицу в BE и выполните ConnectAllTables.
+
+1) Создать таблицу в backend (предпочтительно из FE)
+   - Обновите modDatabase.bas в проекте FE.
+   - Убедитесь, что в tbTableConnections указан существующий путь к Planner_BE.accdb.
+   - В окне Immediate: MigrateEnsureTbBirthdaysTable
+     (или CreateBirthdaysTable — пересоздаёт таблицу и удаляет данные в ней).
+
+   Альтернатива: открыть только Planner_BE.accdb и вызвать те же процедуры (без tbTableConnections в этой базе).
+
+2) Frontend (Planner_FE.accdb или основная FE)
+   - Скопируйте обновлённый modTableConnect.bas.
+   - В окне Immediate: MigrateAddBirthdaysConnectionIfMissing
+     (добавляет одну строку в tbTableConnections с тем же TablePath, что у остальных таблиц BE).
+   - Затем выполните ConnectAllTables (или перезапустите приложение, если при старте вызывается автоподключение).
+
+   Альтернатива вручную (запрос к FE):
+   INSERT INTO tbTableConnections ( TableName, TablePath, Description )
+   SELECT 'tbBirthdays' AS TableName, TablePath, 'Справочник дней рождения' AS Description
+   FROM tbTableConnections WHERE TableName = 'tbExecutors';
+
+3) Новые развёртывания
+   - FillTableConnections уже включает tbBirthdays; создайте таблицу в BE (MigrateEnsureTbBirthdaysTable из FE),
+     затем ConnectAllTables.
+
+4) Запрос и отчёт панели на главной форме
+   - В окне Immediate (FE, с импортированным modBirthdays.bas): EnsureBirthdaysPanelQueryAndReport
+     (создаёт/обновляет qryBirthdaysForPanel и загружает rptBirthdays из DB_VBA\VBA_Reports\rptBirthdays.txt).
+   - Либо по отдельности: EnsureQryBirthdaysForPanel и EnsureRptBirthdaysFromExportFile.
+
+5) Демо-данные для проверки отчёта (10 человек, двое на одну дату наступления ДР)
+   - В окне Immediate: SeedBirthdaysTestData
+   - Удаляет только строки с Notes = «Демо-данные», затем добавляет новые. Даты строятся от текущей Date(),
+     чтобы записи попадали в окно [Date()-N .. Date()+M].
+
+6) Порядок групп в отчёте rptBirthdays (март / апрель не по календарю)
+   - Если группировка по полю OccurrenceDate с отображением «дд.мм.гггг», Access часто сортирует группы
+     как строки (01.04 оказывается выше 28.03).
+   - В выборке есть поле OccurrenceSortKey (Format … «yyyymmdd») — группируйте отчёт по нему.
+   - В заголовке группы источник данных: =Min([OccurrenceDate]), формат даты — «дд.мм.гггг».
+   - Актуальный SQL совпадает с процедурой EnsureQryBirthdaysForPanel; для копирования в конструктор отчёта:
+     в Immediate выполните ?BirthdaysPanelRecordSourceSql() (или обновите сохранённый запрос и укажите его
+     как источник отчёта).
+
+7) Формы справочника (карточка и список)
+   - Имена объектов: frmBirthdayCard, frmBirthdaysList.
+   - Импорт кода: вставьте модули из DB_VBA\VBA_FormCode\Form_frmBirthdayCard.bas и
+     Form_frmBirthdaysList.bas в соответствующие формы (или создайте формы и скопируйте код).
+   - Метаданные контролов (подсказка по именам): DB_VBA\VBA_FormControls\frmBirthdayCard_controls.json,
+     frmBirthdaysList_controls.json.
+   - Имена контролов — по .cursorrules/rules/core-settings.mdc: поля fld_*, кнопки btn_* (подчёркивание после префикса).
+   - frmBirthdayCard: Record Source tbBirthdays, одиночная форма; fld_LastName … fld_Notes; lbl_*; btn_save, btn_close.
+   - frmBirthdaysList: Record Source tbBirthdays, ленточная форма; Order By LastName, FirstName, MiddleName;
+     Allow Additions/Edits/Deletions = No; в области данных: fld_LastName, fld_FirstName, fld_MiddleName,
+     fld_BirthDate (поле ID не выводить — в коде Me.ID из источника tbBirthdays); в заголовке/подвале:
+     btn_add, btn_edit, btn_delete, btn_close;
+     DblClick: fld_LastName, fld_FirstName, fld_MiddleName, fld_BirthDate (см. .bas).
+   - Открытие списка: DoCmd.OpenForm "frmBirthdaysList" (например с кнопки на главной форме).
+
+8) Экспорт кода в папку DB_VBA и обновление репозитория
+   - В frontend: стандартный модуль mod_ExportVBACode, процедура ExportCodeToFolder (режим 1 — полный
+     экспорт: разметка .txt форм/отчётов, JSON контролов, .bas модулей и кода форм/отчётов, JSON таблиц).
+   - Новые формы (frmBirthdayCard, frmBirthdaysList), отчёт rptBirthdays и таблица tbBirthdays подхватываются
+     автоматически; ручных списков имён в mod_ExportVBACode нет.
+   - Сохранённые запросы Access этим экспортом не выгружаются: определение qryBirthdaysForPanel хранится
+     в FE через EnsureQryBirthdaysForPanel (modBirthdays) или восстанавливается при развёртывании (п.4).
+   - После импорта обновлённых .bas в Access выполните ExportCodeToFolder, чтобы синхронизировать DB_VBA.
+
+9) Проверка состава проекта (опционально)
+   - Модуль modProjectAnalysis: RunFullProjectAnalysis / TestBasicComponents выводят в Immediate проверку
+     modBirthdays, tbBirthdays, qryBirthdaysForPanel и rptBirthdays; modBirthdays и tbBirthdays также
+     учтены в списках основных модулей и таблиц (SimpleTest, CheckEssentialTables).

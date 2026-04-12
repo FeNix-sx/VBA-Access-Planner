@@ -1,0 +1,51 @@
+﻿{
+  "formName": "frmDemo",
+  "recordSource": "",
+  "controls": [
+    {
+      "name": "lblProcessName",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "txtActionDescription",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "txtCurrentAction",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "cmdBack",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdNext",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+
+  ]
+}

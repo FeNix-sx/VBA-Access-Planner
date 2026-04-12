@@ -1,0 +1,440 @@
+---
+globs: *.bas, *.cls, *.frm
+alwaysApply: false
+---
+# VBA/Access Coding Standard (Unified)
+
+## Language & Comments
+- Primary language for responses and code comments: **Russian**.
+- Comments describe WHAT the code does, not HOW.
+- Comments must be up-to-date and concise.
+- No comment is better than a wrong comment.
+
+## Code Formatting
+
+Code is written in **VBA**, but use **VBNET** syntax highlighting in messages — it's more informative.
+
+### Procedure/Function Headers
+
+```vbnet
+'################################################################
+'########             НАЗВАНИЕ ПРОЦЕДУРЫ                 ########
+'################################################################
+```
+
+For long names:
+```vbnet
+'################################################################
+'########             ДЛИННЫЕ НАЗВАНИЯ                   ########
+'########            ПРОЦЕДУР И ФУНКЦИЙ                  ########
+'################################################################
+```
+
+Requirements: all lines same length, minimum 3 lines, edges aligned. Functions formatted the same as Subs.
+
+### Procedure/Function Description
+
+Always add description after the header:
+
+```vbnet
+'################################################################
+'########         ПРОВЕРКА СУЩЕСТВОВАНИЯ ПАПКИ           ########
+'################################################################
+Private Function EnsureFolderExists(ByVal strFolderPath As String) As Boolean
+' Назначение: Проверяет наличие папки на диске и создает её
+'             (включая все вложенные), если она отсутствует.
+' Принцип:    Использует объект FileSystemObject.
+' Возврат:    True, если папка существует или успешно создана,
+'             False в случае ошибки.
+'================================================================
+```
+
+Must include: Назначение (purpose), Принцип (approach), Зависимости (dependencies, if relevant), Возврат (return value, for functions).
+
+### Logical Block Separators
+
+In large procedures, always separate code with delimiters:
+
+```vbnet
+' =========================================================
+' 2. ОБНОВЛЯЕМ ТАБЛИЦУ АЛАРМОВ (tbl_AlarmsReportSigTabsFilters)
+' =========================================================
+' ... код ...
+
+' =========================================================
+' 4. ОБНОВЛЯЕМ ТАБЛИЦУ СИГНАЛОВ (tbl_SignalsReportSigTabsFilters)
+' =========================================================
+```
+
+### Indentation
+- TAB = 4 spaces.
+- Variable, function, and procedure names must be unambiguous and readable.
+
+## Form Control Naming
+
+| Type | Prefix | Example |
+|------|--------|---------|
+| Regular fields | `fld_` | `fld_KKS`, `fld_Title` |
+| Search fields | `fld_search_` | `fld_search_KKS` |
+| Buttons | `btn_` | `btn_edit`, `btn_add`, `btn_del` |
+| Option buttons | `opt_` | `opt_Sample`, `opt_AllSignals` |
+| Option frames | `fra_` | `fra_ViewMode` |
+| Checkboxes | `chk_` | `chk_PIDsens`, `chk_ExtSignals` |
+| Toggle buttons | `tgl_` | `tgl_OnOff` |
+| Subforms | `sub_` | `sub_OnCond`, `sub_search_CodeProject` |
+
+## Error Handling & Resource Cleanup
+
+Mandatory error handling in all **significant** procedures/functions:
+
+```vbnet
+On Error GoTo Err_Handler
+' ... код ...
+Exit_Procedure:
+    Set rs = Nothing
+    Set db = Nothing
+    Exit Sub
+
+Err_Handler:
+    Debug.Print "=== Ошибка в процедуре: " & PROC_NAME & " ==="
+    Debug.Print "  Описание: " & Err.Description
+    Debug.Print "  Номер: " & Err.Number
+    Debug.Print String(60, "-")
+    MsgBox "Ошибка: " & Err.Description, vbCritical
+    Resume Exit_Procedure
+```
+
+Rules:
+- Always use `On Error GoTo Err_Handler`.
+- Background functions: suppress errors, return default value.
+- User-facing procedures: `Debug.Print` + optional `MsgBox`.
+- Always release objects (`Set ... = Nothing`) in `Exit_Procedure`.
+- Keep `Debug.Print` only where truly needed.
+
+## SQL in Access
+
+### SQL Formatting
+
+```vbnet
+strSQL = "SELECT поле1, поле2 " & _
+         "FROM таблица " & _
+         "WHERE условие = значение " & _
+         "ORDER BY поле"
+```
+
+Rules:
+- Each keyword (`SELECT`, `FROM`, `WHERE`, `ORDER BY`, `JOIN`) on a new line.
+- Preserve nesting and parentheses in complex JOINs.
+- Parentheses in JOINs are **critical** for Access SQL.
+- Access does not support sorting by alias — use field positions (`ORDER BY 3, 1`).
+
+### Accessing Form Controls
+- `Me.control` — for form controls.
+- `Me!field` — for Recordset fields.
+- `Me.control.Value` — for explicit value access.
+
+## SQL Safety: QueryDef
+
+Must use parameterized `QueryDef` when:
+- user input is involved;
+- variables are used in `WHERE`;
+- `INSERT`/`UPDATE` uses variable values.
+
+String SQL is acceptable when:
+- query is fully static (no variables);
+- all values are code-controlled (not user input);
+- utility queries (creating tables, indexes).
+
+### Example: Parameterized Query
+
+```vbnet
+Dim db As DAO.Database
+Dim qdf As DAO.QueryDef
+Dim strSQL As String
+
+Set db = CurrentDb
+
+strSQL = "SELECT * " & _
+         "FROM tbl_Employees " & _
+         "WHERE [Department] = [prmDept] " & _
+         "AND [HireDate] >= [prmStartDate]"
+
+Set qdf = db.CreateQueryDef("", strSQL)
+qdf.Parameters("[prmDept]") = Me.fld_Department.Value
+qdf.Parameters("[prmStartDate]") = Me.fld_StartDate.Value
+
+Set rs = qdf.OpenRecordset(dbOpenSnapshot)
+```
+
+### Safe vs Unsafe Comparison
+
+```vbnet
+' ОПАСНО — конкатенация пользовательского ввода
+strSQL = "SELECT * FROM tbl WHERE Name = '" & Me.fld_Name & "'"
+
+' БЕЗОПАСНО — параметризованный запрос
+strSQL = "SELECT * FROM tbl WHERE Name = [prmName]"
+```
+
+Rules:
+- Parameter names in square brackets: `[ParamName]`.
+- Do not wrap parameters in quotes in SQL — the engine determines the type.
+- For `LIKE`, put wildcards in the parameter value, not in SQL:
+
+```vbnet
+qdf.Parameters("[prmSearch]") = "*" & Me.fld_search & "*"
+```
+
+- For temporary queries: `CreateQueryDef("", strSQL)` (not saved to database).
+
+## DAO Transactions
+
+Must use transactions (`BeginTrans`/`CommitTrans`/`Rollback`) when:
+- bulk inserts/updates;
+- operations span multiple related tables;
+- data is critical (financials, balances, statuses);
+- `For...Next` loop writes to DB.
+
+Not required when:
+- single read operation;
+- single insert/update with no side effects;
+- operation does not affect data integrity.
+
+### Transaction Pattern
+
+```vbnet
+Dim db As DAO.Database
+Dim bInTrans As Boolean
+
+Set db = CurrentDb
+bInTrans = False
+
+On Error GoTo Err_Handler
+
+db.BeginTrans
+bInTrans = True
+
+    ' --- Операция 1: обновляем заказ ---
+    db.Execute "UPDATE tbl_Orders " & _
+               "SET Status = 'Shipped' " & _
+               "WHERE OrderID = " & lngOrderID, dbFailOnError
+
+    ' --- Операция 2: списываем со склада ---
+    db.Execute "UPDATE tbl_Stock " & _
+               "SET Qty = Qty - " & lngQty & " " & _
+               "WHERE ProductID = " & lngProductID, dbFailOnError
+
+db.CommitTrans
+bInTrans = False
+
+Exit_Procedure:
+    Set db = Nothing
+    Exit Sub
+
+Err_Handler:
+    If bInTrans Then
+        db.Rollback
+        MsgBox "Операция отменена. Изменения не применены.", vbExclamation
+    End If
+    Debug.Print "Ошибка: " & Err.Description
+    Resume Exit_Procedure
+```
+
+Rules:
+- Always `Rollback` in `Err_Handler` (use `bInTrans` flag).
+- Use `dbFailOnError` with `db.Execute`.
+- Minimize transaction duration (no API calls or user dialogs inside).
+- On rollback, explicitly inform the user that changes were not applied.
+
+## Classes & OOP
+
+Use classes for:
+- Business logic (`clsEmployee`, `clsOrder`).
+- Reusable services/utilities (`clsLogger`, `clsEmailSender`).
+- External API integrations (`clsApiConnector`).
+- Domain object collections (`clsEmployees`, `clsOrders`).
+- Complex form logic (extract into a controller class).
+
+Do NOT use classes for:
+- Simple 10-15 line procedures.
+- One-off macros with no growth potential.
+- Quick prototyping.
+
+### Class Structure
+
+```vbnet
+' === ОБЪЯВЛЕНИЯ ===
+Private m_ID As Long
+Private m_Name As String
+
+Public Event BeforeSave(ByRef Cancel As Boolean)
+Public Event AfterSave()
+
+' === СВОЙСТВА ===
+Public Property Get ID() As Long
+    ID = m_ID
+End Property
+
+Public Property Let Name(ByVal Value As String)
+    m_Name = Trim(Value)
+End Property
+
+Public Property Get Name() As String
+    Name = m_Name
+End Property
+
+' === МЕТОДЫ ===
+Public Function Save() As Boolean
+    Dim bCancel As Boolean
+    RaiseEvent BeforeSave(bCancel)
+    If bCancel Then
+        Save = False
+        Exit Function
+    End If
+
+    ' ... логика сохранения ...
+
+    RaiseEvent AfterSave
+    Save = True
+End Function
+
+' === ЖИЗНЕННЫЙ ЦИКЛ ===
+Private Sub Class_Initialize()
+    m_ID = 0
+    m_Name = ""
+End Sub
+
+Private Sub Class_Terminate()
+    ' Очистка ресурсов
+End Sub
+```
+
+### Class Events
+- Use only `RaiseEvent` to fire events (not `Call Event`).
+- For cancellation: `ByRef Cancel As Boolean` in `Before...` events.
+- VBA has no automatic property change events — raise them manually in `Property Let/Set`.
+
+### Collection Classes
+
+Prefer `Scripting.Dictionary` for key-based collections (especially by ID):
+
+```vbnet
+Private m_Items As Object  ' Scripting.Dictionary
+
+Private Sub Class_Initialize()
+    Set m_Items = CreateObject("Scripting.Dictionary")
+End Sub
+
+Public Sub Add(obj As clsEmployee)
+    If Not m_Items.Exists(obj.ID) Then
+        m_Items.Add obj.ID, obj
+    End If
+End Sub
+
+Public Function Item(ByVal ID As Long) As clsEmployee
+    If m_Items.Exists(ID) Then
+        Set Item = m_Items(ID)
+    End If
+End Function
+
+Public Property Get Count() As Long
+    Count = m_Items.Count
+End Property
+
+Public Function Exists(ByVal ID As Long) As Boolean
+    Exists = m_Items.Exists(ID)
+End Function
+```
+
+## Access-Specific Patterns
+
+### ComboBox Filtering
+
+```vbnet
+For i = 0 To Me.ComboBox.ListCount - 1
+    If InStr(1, Me.ComboBox.Column(1, i), searchValue, vbTextCompare) > 0 Then
+        idList = idList & "," & Me.ComboBox.Column(0, i)
+    End If
+Next i
+condition = "[field_fk] IN (" & Mid(idList, 2) & ")"
+```
+
+### Full Filter Reset
+
+```vbnet
+Me.Filter = ""
+Me.FilterOn = False
+```
+
+### Dynamic SQL with Filters
+
+```vbnet
+Private Function BuildFilterSQL() As String
+' Назначение: Динамически собирает SQL с учётом активных фильтров
+' Возврат:    Строка SQL запроса
+'==========================================================
+    Dim strSQL As String
+    Dim strWhere As String
+
+    strSQL = "SELECT t.*, c.CategoryName " & _
+             "FROM tbl_Data AS t " & _
+             "LEFT JOIN tbl_Categories AS c ON t.CategoryID = c.ID "
+
+    If Me.chk_ShowActive.Value = True Then
+        strWhere = AppendCondition(strWhere, "t.Status = 'Active'")
+    End If
+
+    If Nz(Me.fld_search_KKS, "") <> "" Then
+        strWhere = AppendCondition(strWhere, "t.KKS LIKE '*" & Me.fld_search_KKS & "*'")
+    End If
+
+    If strWhere <> "" Then
+        strSQL = strSQL & "WHERE " & strWhere & " "
+    End If
+
+    strSQL = strSQL & "ORDER BY t.DateCreated DESC"
+
+    BuildFilterSQL = strSQL
+End Function
+```
+
+## Development Principles
+- **DRY**: no code duplication; extract repeating logic into functions (`AddCondition`, `EscapeForLike`).
+- **KISS**: don't over-engineer. One block — one task.
+- **Modularity**: one procedure — one responsibility.
+- **Reusability**: shared logic should be universal procedures/classes.
+- **Maintainability**: code must be understandable in 6 months.
+
+## Workflow
+
+**STEP 1: ANALYSIS** — understand the task, clarify requirements.
+
+**STEP 2: PROPOSAL** — suggest implementation plan, discuss technical details (JOIN types, filter logic, AND/OR).
+
+**STEP 3: APPROVAL** — **DO NOT WRITE CODE WITHOUT CONFIRMATION**. Wait for "Yes" or specific instructions.
+
+**STEP 4: IMPLEMENTATION** — write code per approved plan, incrementally. Immediately verify against checklist.
+
+## Pre-Submission Checklist
+- [ ] Procedure headers formatted per standard.
+- [ ] Comments in Russian, describe WHAT not HOW.
+- [ ] Indentation maintained (TAB = 4 spaces).
+- [ ] SQL formatted (keywords on new lines).
+- [ ] Error handling present where needed.
+- [ ] `Debug.Print` used only where necessary.
+- [ ] Control names follow the standard.
+- [ ] No code duplication (DRY).
+- [ ] Code is simple and clear (KISS).
+- [ ] Code is reusable (where appropriate).
+- [ ] Code is modular (each procedure does one thing).
+- [ ] Code will be understandable in 6 months.
+- [ ] Classes used where justified.
+- [ ] Transactions applied for bulk/multi-table operations.
+- [ ] QueryDef used for queries with user input.
+- [ ] Class events use `RaiseEvent` and `ByRef Cancel` for cancellation.
+- [ ] Object cleanup done in `Exit_Procedure`.
+
+---
+
+> **IMPORTANT:** At the end of each response, always write:
+> *"Правила VBA учтены"*

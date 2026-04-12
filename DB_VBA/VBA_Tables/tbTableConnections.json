@@ -1,0 +1,32 @@
+﻿{
+  "tableName": "tbTableConnections",
+  "fields": [
+    {
+      "name": "TableName",
+      "type": 10,
+      "size": 50,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "TablePath",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "Description",
+      "type": 10,
+      "size": 100,
+      "required": false,
+      "attributes": 2
+    }
+
+  ],
+  "indexes": [
+
+  ]
+}

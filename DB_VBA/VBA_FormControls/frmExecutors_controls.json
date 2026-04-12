@@ -1,0 +1,150 @@
+﻿{
+  "formName": "frmExecutors",
+  "recordSource": "tbExecutors",
+  "controls": [
+    {
+      "name": "Авто_Эмблема0",
+      "type": 103,
+      "controlTypeName": "Type103",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Авто_Заголовок0",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись3",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись6",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись9",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись12",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись15",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись18",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "LastName",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "LastName",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "FirstName",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "FirstName",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "MiddleName",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "MiddleName",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "Position",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "Position",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "SortOrder",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "SortOrder",
+      "rowSource": "",
+      "tabIndex": 4
+    }
+,
+    {
+      "name": "Notes",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "Notes",
+      "rowSource": "",
+      "tabIndex": 5
+    }
+,
+    {
+      "name": "cmdClose",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись79",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+
+  ]
+}

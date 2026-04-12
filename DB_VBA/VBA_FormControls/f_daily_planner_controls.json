@@ -1,0 +1,1050 @@
+﻿{
+  "formName": "f_daily_planner",
+  "recordSource": "",
+  "controls": [
+    {
+      "name": "Надпись1",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись2",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись3",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись4",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись5",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись6",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись7",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "btn_previous",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 7
+    }
+,
+    {
+      "name": "btn_next",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 8
+    }
+,
+    {
+      "name": "ПустаяЯчейка392",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка397",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "btn_current",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 6
+    }
+,
+    {
+      "name": "chkHideCompleted",
+      "type": 106,
+      "controlTypeName": "Label",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 4
+    }
+,
+    {
+      "name": "lblChkHideCompleted",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lblExecutorFilter",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cboExecutorFilter",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "",
+      "rowSource": "SELECT ID, LastName & ' ' & Left(FirstName,1) & '.' & Left(MiddleName,1) & '.' AS FullName FROM tbExecutors WHERE ID IS NOT NULL ORDER BY LastName, FirstName; ",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "ПустаяЯчейка429",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка431",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка436",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_MonthYear",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка437",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdSearchEvents",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "cmdEvengGenerate",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "cmdExecutors",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "chk_ShowBirthdays",
+      "type": 106,
+      "controlTypeName": "Label",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 5
+    }
+,
+    {
+      "name": "lblChkShowBirthdays",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "btn_BirthdaysManage",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 9
+    }
+,
+    {
+      "name": "fld_day_1",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_day_2",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "fld_day_3",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "fld_day_4",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "fld_day_5",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 4
+    }
+,
+    {
+      "name": "fld_day_6",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 5
+    }
+,
+    {
+      "name": "fld_day_7",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 6
+    }
+,
+    {
+      "name": "fld_day_8",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 7
+    }
+,
+    {
+      "name": "fld_day_9",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 8
+    }
+,
+    {
+      "name": "fld_day_10",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 9
+    }
+,
+    {
+      "name": "fld_day_11",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 10
+    }
+,
+    {
+      "name": "fld_day_12",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 11
+    }
+,
+    {
+      "name": "fld_day_13",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 12
+    }
+,
+    {
+      "name": "fld_day_14",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 13
+    }
+,
+    {
+      "name": "fld_day_15",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 14
+    }
+,
+    {
+      "name": "fld_day_16",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 15
+    }
+,
+    {
+      "name": "fld_day_17",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 16
+    }
+,
+    {
+      "name": "fld_day_18",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 17
+    }
+,
+    {
+      "name": "fld_day_19",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 18
+    }
+,
+    {
+      "name": "fld_day_20",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 19
+    }
+,
+    {
+      "name": "fld_day_21",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 20
+    }
+,
+    {
+      "name": "fld_day_22",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 21
+    }
+,
+    {
+      "name": "fld_day_23",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 22
+    }
+,
+    {
+      "name": "fld_day_24",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 23
+    }
+,
+    {
+      "name": "fld_day_25",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 24
+    }
+,
+    {
+      "name": "fld_day_26",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 25
+    }
+,
+    {
+      "name": "fld_day_27",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 26
+    }
+,
+    {
+      "name": "fld_day_28",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 27
+    }
+,
+    {
+      "name": "fld_day_29",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 28
+    }
+,
+    {
+      "name": "fld_day_30",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 29
+    }
+,
+    {
+      "name": "fld_day_31",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 30
+    }
+,
+    {
+      "name": "fld_day_32",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 31
+    }
+,
+    {
+      "name": "fld_day_33",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 32
+    }
+,
+    {
+      "name": "fld_day_34",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 33
+    }
+,
+    {
+      "name": "fld_day_35",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 34
+    }
+,
+    {
+      "name": "fld_day_36",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 35
+    }
+,
+    {
+      "name": "fld_day_37",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 36
+    }
+,
+    {
+      "name": "fld_day_38",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 37
+    }
+,
+    {
+      "name": "fld_day_39",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 38
+    }
+,
+    {
+      "name": "fld_day_40",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 39
+    }
+,
+    {
+      "name": "fld_day_41",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 40
+    }
+,
+    {
+      "name": "fld_day_42",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 41
+    }
+,
+    {
+      "name": "lbl_day_7",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_6",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_5",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_4",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_3",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_2",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_1",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_14",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_13",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_12",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_10",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_11",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_9",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_8",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_16",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_15",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_18",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_17",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_19",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_21",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_20",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_22",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_23",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_24",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_25",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_26",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_28",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_27",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_29",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_30",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_31",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_32",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_33",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_35",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_34",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_36",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_37",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_38",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_39",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_40",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_42",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_day_41",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "sub_rptBirthdays",
+      "type": 112,
+      "controlTypeName": "ListBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 42
+    }
+,
+    {
+      "name": "btn_theme",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "cmdCloseDataBase",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "cmdRunDemo",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись478",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+
+  ]
+}

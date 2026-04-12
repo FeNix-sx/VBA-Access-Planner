@@ -1,0 +1,24 @@
+# Microsoft Access — базы и блокировки (исходники — в DB_VBA)
+*.accdb
+*.laccdb
+*.ldb
+~$*
+
+# Архивы релизов (не версионировать в Git)
+*.rar
+*.zip
+
+# Логи отладки
+debug-*.log
+*.log
+
+# ОС
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# Python (если появятся скрипты)
+__pycache__/
+*.py[cod]
+.venv/
+venv/

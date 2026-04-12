@@ -1,0 +1,258 @@
+﻿{
+  "formName": "frmSearch",
+  "recordSource": "SELECT ei.EventDate, ei.EventNote, e.LastName & ' ' & Left(e.FirstName,1) & '.' & Left(e.MiddleName,1) & '.' AS ExecutorName, ei.CompletionMark, ei.AttachmentPath FROM tbEventInstances AS ei LEFT JOIN tbExecutors AS e ON ei.ExecutorID = e.ID WHERE (ei.AttachmentPath IS NOT NULL AND ei.AttachmentPath <> '') ORDER BY ei.EventDate DESC; ",
+  "controls": [
+    {
+      "name": "Надпись28",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись296",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись343",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись49",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cmdSearch",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 6
+    }
+,
+    {
+      "name": "cmdReset",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 7
+    }
+,
+    {
+      "name": "txtSearchText",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 4
+    }
+,
+    {
+      "name": "dtStartDate",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись81",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "dtEndDate",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 5
+    }
+,
+    {
+      "name": "Надпись83",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись72",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись85",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись87",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись89",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Надпись114",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка116",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка117",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка118",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "ПустаяЯчейка119",
+      "type": 127,
+      "controlTypeName": "Type127",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "cboSearchExecutor",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "",
+      "rowSource": "Все исполнители;Обезъян Н.Д.;Сиродов И.Д.;Хоккеистов М.П.",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "cboCompletionStatus",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "",
+      "rowSource": "Все статусы;Выполнено;Не выполнено",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "cboHasAttachment",
+      "type": 111,
+      "controlTypeName": "ComboBox",
+      "controlSource": "",
+      "rowSource": "Не важно;Есть вложения;Нет вложений",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "resEventDate",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "EventDate",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "resEventNote",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "EventNote",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "resStatus",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "CompletionMark",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "resExecutor",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "ExecutorName",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "cmdClose",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+
+  ]
+}

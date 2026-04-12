@@ -1,0 +1,168 @@
+Option Compare Database
+Option Explicit
+
+'################################################################
+'########   rptBirthdays — оформление по палитре темы    ########
+'################################################################
+' Цвета: modThemeColors (Theme_WritePalette из формы или Report_Open).
+' Format — предпросмотр/печать; Paint — вид отчёта (Format там не вызывается).
+' Чередование строк отключается: AlternateBackColor = BackColor + индексы темы 0.
+'################################################################
+
+Private Sub ApplyThemedSectionBack(ByVal sec As Section, ByVal bg As Long)
+    On Error Resume Next
+    sec.BackThemeColorIndex = 0
+    sec.AlternateBackThemeColorIndex = 0
+    sec.BackColor = bg
+    sec.AlternateBackColor = bg
+End Sub
+
+Private Sub ApplyThemedCtlBack(ByVal ctl As Control, ByVal bg As Long)
+    On Error Resume Next
+    ctl.BackThemeColorIndex = 0
+    ctl.BackStyle = 1
+    ctl.BackColor = bg
+End Sub
+
+Private Sub ApplyCtlForeRgb(ByVal ctl As Control, ByVal fc As Long)
+    On Error Resume Next
+    ctl.ForeThemeColorIndex = 0
+    ctl.ForeTint = 100
+    ctl.ForeColor = fc
+End Sub
+
+Private Sub ApplyGroupHeaderColors(ByVal dayDiff As Long)
+    Dim secBg As Long
+
+    Me.fld_OccurrenceDate.BackStyle = 1
+
+    If dayDiff > 0 Then
+        secBg = OtherTheme_Back
+        ApplyThemedSectionBack Me.GroupHeader0, secBg
+        ApplyThemedCtlBack Me.fld_OccurrenceDate, OtherTheme_Back
+        Me.fld_OccurrenceDate.BorderColor = OtherTheme_Border
+        Me.fld_OccurrenceDate.BorderWidth = 1
+        ApplyCtlForeRgb Me.fld_OccurrenceDate, OtherTheme_Text
+    ElseIf dayDiff = 0 Then
+        secBg = TodayTheme_Back
+        ApplyThemedSectionBack Me.GroupHeader0, secBg
+        ApplyThemedCtlBack Me.fld_OccurrenceDate, CurrentTheme_Back
+        Me.fld_OccurrenceDate.BorderColor = TodayTheme_Border
+        Me.fld_OccurrenceDate.BorderWidth = 2
+        ApplyCtlForeRgb Me.fld_OccurrenceDate, CurrentTheme_Text
+    Else
+        secBg = CurrentTheme_Back
+        ApplyThemedSectionBack Me.GroupHeader0, secBg
+        ApplyThemedCtlBack Me.fld_OccurrenceDate, CurrentTheme_Back
+        Me.fld_OccurrenceDate.BorderColor = CurrentTheme_Border
+        Me.fld_OccurrenceDate.BorderWidth = 1
+        ApplyCtlForeRgb Me.fld_OccurrenceDate, CurrentTheme_Text
+    End If
+End Sub
+
+Private Sub ClearDetailFontTheme()
+    On Error Resume Next
+    Me.fld_PersonLine.ThemeFontIndex = 0
+    Me.fld_Notes.ThemeFontIndex = 0
+End Sub
+
+Private Sub ApplyDetailColors(ByVal dayDiff As Long)
+    ClearDetailFontTheme
+
+    Me.fld_PersonLine.FontItalic = False
+    Me.fld_Notes.FontItalic = False
+
+    If dayDiff > 0 Then
+        ApplyThemedSectionBack Me.Detail, OtherTheme_Back
+        ApplyThemedCtlBack Me.fld_PersonLine, OtherTheme_Back
+        ApplyThemedCtlBack Me.fld_Notes, OtherTheme_Back
+        ApplyCtlForeRgb Me.fld_PersonLine, RGB(128, 128, 128)
+        ApplyCtlForeRgb Me.fld_Notes, RGB(128, 128, 128)
+        Me.fld_PersonLine.FontItalic = True
+        Me.fld_Notes.FontItalic = True
+    ElseIf dayDiff = 0 Then
+        ApplyThemedSectionBack Me.Detail, TodayTheme_Back
+        ApplyThemedCtlBack Me.fld_PersonLine, TodayTheme_Back
+        ApplyThemedCtlBack Me.fld_Notes, TodayTheme_Back
+        ApplyCtlForeRgb Me.fld_PersonLine, CurrentTheme_Text
+        ApplyCtlForeRgb Me.fld_Notes, CurrentTheme_Text
+    Else
+        ApplyThemedSectionBack Me.Detail, CurrentTheme_Back
+        ApplyThemedCtlBack Me.fld_PersonLine, CurrentTheme_Back
+        ApplyThemedCtlBack Me.fld_Notes, CurrentTheme_Back
+        ApplyCtlForeRgb Me.fld_PersonLine, CurrentTheme_Text
+        ApplyCtlForeRgb Me.fld_Notes, CurrentTheme_Text
+    End If
+End Sub
+
+Private Sub Report_Open(Cancel As Integer)
+    On Error GoTo CleanUp
+
+    Dim db As DAO.Database
+    Dim rs As DAO.Recordset
+
+    Set rs = Nothing
+    Set db = CurrentDb
+    Set rs = db.OpenRecordset("SELECT * FROM tbThemes WHERE IsActive = True", dbOpenSnapshot)
+
+    If rs.EOF Then
+        rs.Close
+        Set rs = db.OpenRecordset("SELECT * FROM tbThemes ORDER BY ThemeID", dbOpenSnapshot)
+    End If
+
+    If Not rs.EOF Then
+        Theme_WritePalette _
+            rs!CurrentMonth_Text, rs!CurrentMonth_Back, rs!CurrentMonth_Border, _
+            rs!OtherMonth_Text, rs!OtherMonth_Back, rs!OtherMonth_Border, _
+            rs!Today_Back, rs!Today_Border, _
+            rs!Header_Text, rs!Header_Back, rs!Header_Border, _
+            rs!Form_Back
+    End If
+
+CleanUp:
+    On Error Resume Next
+    If Not rs Is Nothing Then
+        rs.Close
+        Set rs = Nothing
+    End If
+End Sub
+
+Private Sub GroupHeader0_Format(Cancel As Integer, FormatCount As Integer)
+    Dim occ As Variant
+    occ = Me.OccurrenceDate
+    If Not IsDate(occ) Then Exit Sub
+
+    Dim dayDiff As Long
+    dayDiff = DateDiff("d", DateValue(occ), Date)
+    ApplyGroupHeaderColors dayDiff
+End Sub
+
+Private Sub GroupHeader0_Paint()
+    Dim occ As Variant
+    Dim dayDiff As Long
+
+    occ = Me.OccurrenceDate
+    If Not IsDate(occ) Then Exit Sub
+    dayDiff = DateDiff("d", DateValue(occ), Date)
+    ApplyGroupHeaderColors dayDiff
+End Sub
+
+Private Sub Detail_Format(Cancel As Integer, FormatCount As Integer)
+    Dim occ As Variant
+    occ = Me.OccurrenceDate
+    If Not IsDate(occ) Then Exit Sub
+
+    Dim dayDiff As Long
+    dayDiff = DateDiff("d", DateValue(occ), Date)
+    ApplyDetailColors dayDiff
+End Sub
+
+Private Sub Detail_Paint()
+    Dim occ As Variant
+    Dim dayDiff As Long
+
+    occ = Me.OccurrenceDate
+    If Not IsDate(occ) Then Exit Sub
+    dayDiff = DateDiff("d", DateValue(occ), Date)
+    ApplyDetailColors dayDiff
+End Sub

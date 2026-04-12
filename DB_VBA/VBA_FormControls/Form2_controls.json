@@ -1,0 +1,24 @@
+﻿{
+  "formName": "Form2",
+  "recordSource": "",
+  "controls": [
+    {
+      "name": "f_daily_planner",
+      "type": 112,
+      "controlTypeName": "ListBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "Кнопка2",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+
+  ]
+}

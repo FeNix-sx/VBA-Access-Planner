@@ -1,0 +1,123 @@
+﻿{
+  "formName": "frmBirthdaysList",
+  "recordSource": "tbBirthdays",
+  "controls": [
+    {
+      "name": "lblTitle",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_LastName",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_FirstName",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_MiddleName",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_BirthDate",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_LastName",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "LastName",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_FirstName",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "FirstName",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "fld_MiddleName",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "MiddleName",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "fld_BirthDate",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "BirthDate",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "btn_Close",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "btn_Delete",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "btn_Edit",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "btn_Add",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+
+  ]
+}

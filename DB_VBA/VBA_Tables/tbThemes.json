@@ -1,0 +1,137 @@
+﻿{
+  "tableName": "tbThemes",
+  "fields": [
+    {
+      "name": "ThemeID",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 17
+    }
+,
+    {
+      "name": "ThemeName",
+      "type": 10,
+      "size": 50,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "IsActive",
+      "type": 1,
+      "size": 1,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "CurrentMonth_Text",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "CurrentMonth_Back",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "CurrentMonth_Border",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "OtherMonth_Text",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "OtherMonth_Back",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "OtherMonth_Border",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "Today_Back",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "Today_Border",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "Header_Text",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "Header_Back",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "Header_Border",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "Form_Back",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+
+  ],
+  "indexes": [
+    {
+      "name": "PrimaryKey",
+      "primary": true,
+      "unique": true,
+      "fields": [
+        "ThemeID"
+
+      ]
+    }
+
+  ]
+}

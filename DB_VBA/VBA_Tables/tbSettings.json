@@ -1,0 +1,33 @@
+﻿{
+  "tableName": "tbSettings",
+  "fields": [
+    {
+      "name": "SettingName",
+      "type": 10,
+      "size": 255,
+      "required": true,
+      "attributes": 2
+    }
+,
+    {
+      "name": "SettingValue",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+
+  ],
+  "indexes": [
+    {
+      "name": "Index_631EDFFA_1756_4CC0",
+      "primary": true,
+      "unique": true,
+      "fields": [
+        "SettingName"
+
+      ]
+    }
+
+  ]
+}

@@ -1,0 +1,123 @@
+﻿{
+  "formName": "frmBirthdayCard",
+  "recordSource": "tbBirthdays",
+  "controls": [
+    {
+      "name": "lblTitle",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_LastName",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "LastName",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lblLastName",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_FirstName",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "FirstName",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+,
+    {
+      "name": "lblFirstName",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_MiddleName",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "MiddleName",
+      "rowSource": "",
+      "tabIndex": 2
+    }
+,
+    {
+      "name": "lblMiddleName",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_BirthDate",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "BirthDate",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "lblBirthDate",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_Notes",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "Notes",
+      "rowSource": "",
+      "tabIndex": 4
+    }
+,
+    {
+      "name": "lblNotes",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "btn_Save",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "btn_Close",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+
+  ]
+}

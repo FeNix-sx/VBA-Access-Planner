@@ -1,0 +1,64 @@
+﻿{
+  "tableName": "tbTempEvents",
+  "fields": [
+    {
+      "name": "TempID",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "EventDate",
+      "type": 8,
+      "size": 8,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "EventNote",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "OriginalDay",
+      "type": 3,
+      "size": 2,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "ExecutorID",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "AttachmentPath",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "BasisAttachment",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+
+  ],
+  "indexes": [
+
+  ]
+}

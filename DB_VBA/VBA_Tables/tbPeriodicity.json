@@ -1,0 +1,32 @@
+﻿{
+  "tableName": "tbPeriodicity",
+  "fields": [
+    {
+      "name": "PeriodicityID",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 17
+    }
+,
+    {
+      "name": "PeriodicityName",
+      "type": 10,
+      "size": 50,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "Description",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+
+  ],
+  "indexes": [
+
+  ]
+}

@@ -1,0 +1,115 @@
+﻿{
+  "tableName": "tbEventInstances",
+  "fields": [
+    {
+      "name": "InstanceID",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 17
+    }
+,
+    {
+      "name": "EventDate",
+      "type": 8,
+      "size": 8,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "EventNote",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "Basis",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "BasisAttachment",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "CompletionDate",
+      "type": 8,
+      "size": 8,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "CompletionMark",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "LastModified",
+      "type": 8,
+      "size": 8,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "AttachmentPath",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "ExecutorID",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 1
+    }
+,
+    {
+      "name": "Notes",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+
+  ],
+  "indexes": [
+    {
+      "name": "PrimaryKey",
+      "primary": true,
+      "unique": true,
+      "fields": [
+        "InstanceID"
+
+      ]
+    }
+,
+    {
+      "name": "relExecutorsEvents",
+      "primary": false,
+      "unique": false,
+      "fields": [
+        "ExecutorID"
+
+      ]
+    }
+
+  ]
+}

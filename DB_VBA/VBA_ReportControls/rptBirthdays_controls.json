@@ -1,0 +1,42 @@
+﻿{
+  "reportName": "rptBirthdays",
+  "recordSource": "SELECT q.ID, q.LastName, q.FirstName, q.MiddleName, q.BirthDate, q.Notes, q.OccurrenceDate, Format(q.OccurrenceDate,\"yyyymmdd\") AS OccurrenceSortKey, BirthdayAgeText([q].[BirthDate],[q].[OccurrenceDate]) AS AgeText, Trim(q.LastName & \" \" & q.FirstName & IIf(Len(Nz(q.MiddleName,\"\"))=0,\"\",\" \" & q.MiddleName)) AS FullName FROM (SELECT tbBirthdays.ID, tbBirthdays.LastName, tbBirthdays.FirstName, tbBirthdays.MiddleName, tbBirthdays.BirthDate, tbBirthdays.Notes, BirthdayOccurrenceInWindow([BirthDate]) AS OccurrenceDate FROM tbBirthdays)  AS q WHERE q.OccurrenceDate Is Not Null ORDER BY Format(q.OccurrenceDate,\"yyyymmdd\"), [q].[LastName], [q].[FirstName], [q].[MiddleName]; ",
+  "controls": [
+    {
+      "name": "fld_Title",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_OccurrenceDate",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "OccurrenceDate",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_PersonLine",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "=[FullName] & \" - \" & [AgeText]",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_Notes",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "Notes",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+
+  ]
+}

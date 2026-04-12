@@ -1,0 +1,40 @@
+﻿{
+  "tableName": "tbRules",
+  "fields": [
+    {
+      "name": "RuleID",
+      "type": 4,
+      "size": 4,
+      "required": false,
+      "attributes": 17
+    }
+,
+    {
+      "name": "RuleName",
+      "type": 10,
+      "size": 100,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "RuleDescription",
+      "type": 10,
+      "size": 255,
+      "required": false,
+      "attributes": 2
+    }
+,
+    {
+      "name": "CalculationMethod",
+      "type": 10,
+      "size": 50,
+      "required": false,
+      "attributes": 2
+    }
+
+  ],
+  "indexes": [
+
+  ]
+}

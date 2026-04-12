@@ -1,0 +1,253 @@
+# Машиночитаемый индекс выгрузки Planner (DB_VBA).
+# Назначение: слияние результатов агентов, навигация для LLM, без дублирования тел процедур.
+---
+project_name: Planner
+analysis_scope:
+  root: DB_VBA
+  exclude_globs:
+    - "*.accdb"
+  note_ru: "Бинарные базы Access не входят в репозиторийный анализ; схема — из VBA_Tables/*.json"
+
+folder_roles:
+  VBA_Modules: "Стандартные модули .bas"
+  VBA_FormCode: "Код классов форм Form_<Name>.bas"
+  VBA_FormControls: "Метаданные контролов форм JSON"
+  VBA_ReportCode: "Код отчёта .bas и вспомогательный .txt"
+  VBA_ReportControls: "JSON контролов отчёта"
+  VBA_Tables: "JSON определений таблиц (поля, индексы)"
+  VBA_Classes: "Class modules .cls"
+  Migrations: "Текстовые инструкции миграций"
+  reference: "Справочники (не код приложения)"
+
+tables_exported_json:
+  - tbBirthdays
+  - tbEventInstances
+  - tbExecutors
+  - tbPeriodicity
+  - tbRules
+  - tbSettings
+  - tbTableConnections
+  - tbTempEvents
+  - tbThemes
+
+dev_tooling_modules:
+  role_ru: "Инфраструктура репозитория и отладки, не ядро бизнес-логики для пользователя"
+  items:
+    - name: mod_ExportVBACode
+      path: DB_VBA/VBA_Modules/mod_ExportVBACode.bas
+      public_api: [ExportCodeToFolder, ShowAllAccessForms]
+    - name: modProjectAnalysis
+      path: DB_VBA/VBA_Modules/modProjectAnalysis.bas
+      public_api:
+        - RunFullProjectAnalysis
+        - RunQuickTest
+        - SimpleTest
+        - TestSpecificForm
+        - TestSpecificTable
+        - ShowProjectInfo
+        - FullFormAnalysis
+        - ПроанализироватьТаблицы
+        - БыстрыйТестТаблиц
+        - GetProjectObjectsList
+        - GetModulesList
+        - GetFormsList
+    - name: modAgentDebugLog
+      path: DB_VBA/VBA_Modules/modAgentDebugLog.bas
+      public_api: [AgentJsonEsc, AgentDbgLog, AgentDbgLogErr]
+    - name: modDemo
+      path: DB_VBA/VBA_Modules/modDemo.bas
+      public_api: [ExportAllCodeToSingleFile]
+
+standard_modules:
+  - file: DB_VBA/VBA_Modules/modDatabase.bas
+    role_ru: "DDL, наполнение справочников, диагностика структуры, экспорт VBA в txt (legacy)"
+    public_api:
+      - CreateThemesTable
+      - AddDefaultThemes
+      - InitializeThemes
+      - SetActiveTheme
+      - CreateEventInstancesTable
+      - AddEventInstancesFieldDescriptions
+      - CreateTempEventsTable
+      - AddTempEventsFieldDescriptions
+      - CreatePeriodicityTable
+      - CreateRulesTable
+      - ShowTableStructure
+      - CheckTableStructures
+      - ShowFormControls
+      - CreateSettingsTableWithDescriptions
+      - CreateExecutorsTable
+      - CreateBirthdaysTable
+      - MigrateEnsureTbBirthdaysTable
+      - AddFieldsToEventInstances
+      - CreateRelationship
+      - ShowThemes
+      - ExportAllVBAToTxt
+  - file: DB_VBA/VBA_Modules/modTableConnect.bas
+    role_ru: "Связанные таблицы FE→BE, автоподключение при старте"
+    public_api:
+      - CreateTableConnections
+      - DisconnectAllTables
+      - ConnectAllTables
+      - TableExists
+      - LinkTable
+      - MigrateAddBirthdaysConnectionIfMissing
+      - AutoConnectOnStartup
+  - file: DB_VBA/VBA_Modules/modProtection.bas
+    role_ru: "Идентификация ПК, лицензия, пароль админа, Shift bypass"
+    public_api:
+      - GetComputerName
+      - GetMACAddress
+      - GetDiskSerial
+      - GenerateComputerID
+      - GenerateFileID
+      - TestProtectionSystem
+      - GenerateActivationKey
+      - ValidateActivationKey
+      - TestActivationKey
+      - GetDiskSerialWMI
+      - GenerateReliableComputerID
+      - AdvancedHash
+      - SaveLicenseSetting
+      - LoadLicenseSetting
+      - CheckLicenseOnStartup
+      - InitializeLicense
+      - TestLicenseSystem
+      - SetAdminPassword
+      - EnableShiftKey
+      - DisableShiftKey
+  - file: DB_VBA/VBA_Modules/modThemeColors.bas
+    role_ru: "Глобальная палитра активной темы для форм и отчётов"
+    public_api: [Theme_WritePalette]
+    public_variables:
+      - CurrentTheme_Text
+      - CurrentTheme_Back
+      - CurrentTheme_Border
+      - OtherTheme_Text
+      - OtherTheme_Back
+      - OtherTheme_Border
+      - TodayTheme_Back
+      - TodayTheme_Border
+      - HeaderTheme_Text
+      - HeaderTheme_Back
+      - HeaderTheme_Border
+      - FormTheme_Back
+  - file: DB_VBA/VBA_Modules/modBirthdays.bas
+    role_ru: "Логика ДР, запрос панели, отчёт, тестовые данные"
+    public_api:
+      - BirthdayOccurrenceInWindow
+      - BirthdayAgeText
+      - EnsureQryBirthdaysForPanel
+      - EnsureRptBirthdaysFromExportFile
+      - EnsureBirthdaysPanelQueryAndReport
+      - SeedBirthdaysTestData
+      - BirthdaysPanelRecordSourceSql
+      - RefreshBirthdaysUIAfterEdit
+  - file: DB_VBA/VBA_Modules/modClearTable.bas
+    role_ru: "Очистка таблиц, переключение режима конструктора форм"
+    public_api: [ClearAllTables, DisableDesignMode, EnableDesignMode]
+
+class_modules:
+  - file: DB_VBA/VBA_Classes/cLogger.cls
+    public_api:
+      - WriteLog
+      - DebugLog
+      - InfoLog
+      - WarningLog
+      - ErrorLog
+      - CriticalLog
+
+forms:
+  - form_name: f_daily_planner
+    code_file: DB_VBA/VBA_FormCode/Form_f_daily_planner.bas
+    controls_json: DB_VBA/VBA_FormControls/f_daily_planner_controls.json
+    public_methods:
+      - BuildCalendar
+      - ApplyTheme
+      - InitializeExecutorFilter
+      - OpenDayEvents
+      - ApplyExecutorFilter
+      - ApplyHideCompletedFilter
+      - GoToNextMonth
+      - GoToPreviousMonth
+      - GoToCurrentMonth
+    key_event_handlers:
+      - Form_Load
+      - btn_theme_Click
+      - cmdSearchEvents_Click
+      - cmdEvengGenerate_Click
+      - fld_day_1_DblClick
+      - fld_day_42_DblClick
+  - form_name: frmDayEvents
+    code_file: DB_VBA/VBA_FormCode/Form_frmDayEvents.bas
+    controls_json: DB_VBA/VBA_FormControls/frmDayEvents_controls.json
+    public_methods: [GoToNextDay, GoToPreviousDay, StartEditMode, SaveChanges, CloseForm]
+    key_event_handlers: [Form_Load, Form_Open, cmdSave_Click, cmdBrowseFile_Click]
+  - form_name: frmSearch
+    code_file: DB_VBA/VBA_FormCode/Form_frmSearch.bas
+    controls_json: DB_VBA/VBA_FormControls/frmSearch_controls.json
+    public_methods: [ExecuteSearch, ResetSearch, CloseSearchForm]
+  - form_name: frmEventGenerator
+    code_file: DB_VBA/VBA_FormCode/Form_frmEventGenerator.bas
+    controls_json: DB_VBA/VBA_FormControls/frmEventGenerator_controls.json
+    key_event_handlers: [cmdGenerate_Click, cmdSave_Click, Form_Load]
+  - form_name: frmExecutors
+    code_file: DB_VBA/VBA_FormCode/Form_frmExecutors.bas
+    controls_json: DB_VBA/VBA_FormControls/frmExecutors_controls.json
+  - form_name: frmThemeSelector
+    code_file: DB_VBA/VBA_FormCode/Form_frmThemeSelector.bas
+    controls_json: DB_VBA/VBA_FormControls/frmThemeSelector_controls.json
+    public_methods: [ApplySelectedTheme, CloseThemeForm, GetThemeCount, SelectThemeByIndex]
+  - form_name: frmPassword
+    code_file: DB_VBA/VBA_FormCode/Form_frmPassword.bas
+    controls_json: DB_VBA/VBA_FormControls/frmPassword_controls.json
+  - form_name: frmAdmin
+    code_file: DB_VBA/VBA_FormCode/Form_frmAdmin.bas
+    controls_json: DB_VBA/VBA_FormControls/frmAdmin_controls.json
+  - form_name: frmBirthdaysList
+    code_file: DB_VBA/VBA_FormCode/Form_frmBirthdaysList.bas
+    controls_json: DB_VBA/VBA_FormControls/frmBirthdaysList_controls.json
+  - form_name: frmBirthdayCard
+    code_file: DB_VBA/VBA_FormCode/Form_frmBirthdayCard.bas
+    controls_json: DB_VBA/VBA_FormControls/frmBirthdayCard_controls.json
+  - form_name: frmDemo
+    code_file: DB_VBA/VBA_FormCode/Form_frmDemo.bas
+    controls_json: DB_VBA/VBA_FormControls/frmDemo_controls.json
+    note_ru: "Много приватных Demo_* — см. исходник"
+  - form_name: frmFileFolderSelector
+    code_file: DB_VBA/VBA_FormCode/Form_frmFileFolderSelector.bas
+    controls_json: DB_VBA/VBA_FormControls/frmFileFolderSelector_controls.json
+  - form_name: Form2
+    controls_json_only: DB_VBA/VBA_FormControls/Form2_controls.json
+    note_ru: "Нет Form_Form2.bas в выгрузке — проверять в базе"
+
+reports:
+  - report_name: rptBirthdays
+    code_file: DB_VBA/VBA_ReportCode/Report_rptBirthdays.bas
+    layout_text: DB_VBA/VBA_ReportCode/Report_rptBirthdays.txt
+    controls_json: DB_VBA/VBA_ReportControls/rptBirthdays_controls.json
+    key_event_handlers: [Report_Open, Report_Activate, Detail_Format, GroupHeader0_Format]
+
+navigation_do_cmd_open_form:
+  note_ru: "Матрица открытия форм из кода .bas"
+  edges:
+    - { from: f_daily_planner, to: frmEventGenerator }
+    - { from: f_daily_planner, to: frmExecutors }
+    - { from: f_daily_planner, to: frmBirthdaysList }
+    - { from: f_daily_planner, to: frmDemo }
+    - { from: f_daily_planner, to: frmThemeSelector }
+    - { from: f_daily_planner, to: frmSearch }
+    - { from: f_daily_planner, to: frmDayEvents }
+    - { from: frmSearch, to: frmDayEvents }
+    - { from: frmDayEvents, to: frmFileFolderSelector }
+    - { from: frmEventGenerator, to: frmFileFolderSelector }
+    - { from: frmPassword, to: frmAdmin }
+    - { from: frmBirthdaysList, to: frmBirthdayCard }
+    - { from: frmDemo, to: f_daily_planner }
+    - { from: frmDemo, to: frmSearch }
+    - { from: frmDemo, to: frmThemeSelector }
+
+related_human_docs:
+  - docs/planner-report-01-overview.md
+  - docs/planner-report-02-data-model.md
+  - docs/planner-report-03-forms-and-reports.md
