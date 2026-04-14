@@ -283,6 +283,8 @@ End Sub
 Private Sub ApplyEventPanelTheme()
     On Error GoTo ErrorHandler
 
+    If Not IsEventPanelReportReady() Then Exit Sub
+
     ' Делегируем оформление самому отчету, чтобы не дублировать палитру.
     Me.sub_rptEventInstances.Report.ApplyThemeFromHost
 
@@ -291,6 +293,19 @@ Private Sub ApplyEventPanelTheme()
 ErrorHandler:
     ' Панель может быть недоступна до полной инициализации отчета
 End Sub
+
+Private Function IsEventPanelReportReady() As Boolean
+    On Error GoTo NotReady
+
+    Dim reportName As String
+    reportName = Me.sub_rptEventInstances.Report.Name
+
+    IsEventPanelReportReady = (Len(reportName) > 0)
+    Exit Function
+
+NotReady:
+    IsEventPanelReportReady = False
+End Function
 
 '################################################################
 '########     Загрузка настройки «Текущий день»          ########
