@@ -4,6 +4,7 @@
 '########              КАЛЕНДАРЬ СОБЫТИЙ                 ########
 '################################################################
 Dim CurrentMonth As Date
+Private m_SelectedPanelDate As Date
 
 ' Переменные для хранения цветов текущей темы
 Dim CurrentTheme_Text As Long
@@ -22,12 +23,12 @@ Dim FormTheme_Back As Long
 ' Константы позиции окна и размеров формы «Дни рождения» (twips)
 Private Const TWIPS_DAILY_PLANNER_LEFT As Long = 500
 Private Const TWIPS_DAILY_PLANNER_TOP As Long = 1000
-Private Const TWIPS_FORM_BASE_WIDTH As Long = 18500
+Private Const TWIPS_FORM_BASE_WIDTH As Long = 21800
 Private Const TWIPS_FORM_HEIGHT As Long = 14400
 Private Const TWIPS_BIRTHDAYS_PANEL_EXTRA_WIDTH As Long = 3300
 
 '################################################################
-'########           Кнопка "Текущий месяц"              ########
+'########            Кнопка "Текущий месяц"              ########
 '################################################################
 Private Sub btn_current_Click()
     ' Переход к текущему месяцу без изменения даты
@@ -39,28 +40,28 @@ Private Sub btn_current_Click()
 End Sub
 
 '################################################################
-'########           Фильтр исполнителей                 ########
+'########            Фильтр исполнителей                 ########
 '################################################################
 Private Sub cboExecutorFilter_DblClick(Cancel As Integer)
-    Me.cboExecutorFilter.value = Null
+    Me.cboExecutorFilter.Value = Null
     Call cboExecutorFilter_AfterUpdate
 End Sub
 
 '################################################################
-'########        Кнопка генерации событий               ########
+'########         Кнопка генерации событий               ########
 '################################################################
 Private Sub cmdEvengGenerate_Click()
     DoCmd.OpenForm "frmEventGenerator"
 End Sub
 '################################################################
-'########        Кнопка справочника исполнителей       ########
+'########         Кнопка справочника исполнителей        ########
 '################################################################
 Private Sub cmdExecutors_Click()
     DoCmd.OpenForm "frmExecutors"
 End Sub
 
 '################################################################
-'########        Управление днями рождения              ########
+'########         Управление днями рождения              ########
 '################################################################
 Private Sub btn_BirthdaysManage_Click()
     On Error GoTo ErrorHandler
@@ -96,6 +97,9 @@ Private Sub Form_Load()
     ' Загрузка настройки скрытия выполненных
     Call LoadHideCompletedSetting
 
+    ' Загрузка настройки фиксации панели на текущем дне
+    Call LoadCurrentDaySetting
+
     ' Настройка «Дни рождения» (из настроек базы, см. п.8)
     Call LoadShowBirthdaysPanelSetting
 
@@ -105,16 +109,226 @@ Private Sub Form_Load()
     ' Построение сетки календаря
     Call BuildCalendar
 
+    ' Инициализация состояния выбранной даты панели событий дня
+    m_SelectedPanelDate = Date
+
+    ' Первичное обновление панели событий дня
+    Call RefreshEventPanel
+
 '     Скрыть панель навигации (NAVIGATION PANE)
 '    DoCmd.NavigateTo "acNavigationCategoryObjectType"
 '    DoCmd.RunCommand acCmdWindowHide
-'
-'    ' Скрыть ленту инструментов (RIBBON)
+
+    ' Скрыть ленту инструментов (RIBBON)
 '    DoCmd.ShowToolbar "Ribbon", acToolbarNo
 
     ' Применить размер и видимость панели дней рождения
     Call ApplyBirthdaysPanelLayout
 
+End Sub
+
+'################################################################
+'########       Целевая дата панели событий дня          ########
+'################################################################
+Private Function GetPanelTargetDate() As Date
+    '#region agent log
+    Call DebugLog("run-pre", "H2", "Form_f_daily_planner.bas:GetPanelTargetDate", "Определяем целевую дату панели", _
+                  "{""chkCurrentDay"":" & IIf(Nz(Me.chk_CurrentDay, True), "true", "false") & ",""selectedPanelDate"":""" & Format(Nz(m_SelectedPanelDate, Date), "yyyy-mm-dd") & """}")
+    '#endregion
+
+    If Nz(Me.chk_CurrentDay, True) Then
+        GetPanelTargetDate = Date
+    ElseIf IsDate(m_SelectedPanelDate) Then
+        GetPanelTargetDate = DateValue(m_SelectedPanelDate)
+    Else
+        GetPanelTargetDate = Date
+    End If
+End Function
+
+'################################################################
+'########      Построение фильтра панели событий         ########
+'################################################################
+Private Function BuildEventPanelFilter(ByVal targetDate As Date) As String
+    Dim filterText As String
+
+    filterText = "EventDate = #" & Format(DateValue(targetDate), "mm\/dd\/yyyy") & "#"
+
+    If Not IsNull(Me.cboExecutorFilter.Value) And Me.cboExecutorFilter.Value <> "" Then
+        filterText = filterText & " AND ExecutorID = " & CLng(Me.cboExecutorFilter.Value)
+    End If
+
+    BuildEventPanelFilter = filterText
+
+    '#region agent log
+    Call DebugLog("run-pre", "H3", "Form_f_daily_planner.bas:BuildEventPanelFilter", "Собран фильтр панели", _
+                  "{""targetDate"":""" & Format(targetDate, "yyyy-mm-dd") & """,""executorFilterApplied"":" & IIf(Not IsNull(Me.cboExecutorFilter.Value) And Me.cboExecutorFilter.Value <> "", "true", "false") & ",""filterText"":""" & EscapeJson(filterText) & """}")
+    '#endregion
+End Function
+
+'################################################################
+'########      Подсчет событий для выбранной даты         ########
+'################################################################
+Private Function CountEventsForPanelDate(ByVal targetDate As Date, ByVal executorId As Variant) As Long
+    Dim whereText As String
+
+    whereText = "EventDate = #" & Format(DateValue(targetDate), "mm\/dd\/yyyy") & "#"
+    If Not IsNull(executorId) Then
+        whereText = whereText & " AND ExecutorID = " & CLng(executorId)
+    End If
+
+    CountEventsForPanelDate = DCount("*", "tbEventInstances", whereText)
+End Function
+
+'################################################################
+'########      Единое обновление панели событий          ########
+'################################################################
+Private Sub RefreshEventPanel()
+    On Error GoTo ErrorHandler
+
+    Dim targetDate As Date
+    Dim filterText As String
+    Dim dataPhaseEnabled As Boolean
+    Dim executorId As Variant
+    Dim expectedRows As Long
+
+    targetDate = GetPanelTargetDate()
+    filterText = BuildEventPanelFilter(targetDate)
+    dataPhaseEnabled = True
+    executorId = Null
+    If Not IsNull(Me.cboExecutorFilter.Value) And Me.cboExecutorFilter.Value <> "" Then
+        executorId = CLng(Me.cboExecutorFilter.Value)
+    End If
+    expectedRows = CountEventsForPanelDate(targetDate, executorId)
+
+    '#region agent log
+    Call DebugLog("run-pre", "H4", "Form_f_daily_planner.bas:RefreshEventPanel", "Перед применением фильтра к подотчету", _
+                  "{""targetDate"":""" & Format(targetDate, "yyyy-mm-dd") & """,""filterText"":""" & EscapeJson(filterText) & """}")
+    '#endregion
+    '#region agent log
+    Call DebugLog("run-pre", "H8", "Form_f_daily_planner.bas:RefreshEventPanel", "Ожидаемое число строк по DCount", _
+                  "{""targetDate"":""" & Format(targetDate, "yyyy-mm-dd") & """,""expectedRows"":" & CStr(expectedRows) & "}")
+    '#endregion
+
+    With Me.sub_rptEventInstances.Report
+        '#region agent log
+        Call DebugLog("run-pre", "H5", "Form_f_daily_planner.bas:RefreshEventPanel", "Подотчет открыт, читаем его RecordSource", _
+                      "{""recordSource"":""" & EscapeJson(Nz(.RecordSource, "")) & """}")
+        '#endregion
+
+        .lbl_Day.Caption = Format(targetDate, "d mmmm yyyy ""г.""")
+        '#region agent log
+        Call DebugLog("run-pre", "H4", "Form_f_daily_planner.bas:RefreshEventPanel", "Обновили caption lbl_Day", _
+                      "{""caption"":""" & EscapeJson(.lbl_Day.Caption) & """}")
+        '#endregion
+
+        If dataPhaseEnabled Then
+            '#region agent log
+            Call DebugLog("run-pre", "H7", "Form_f_daily_planner.bas:RefreshEventPanel", "Передаем дату/исполнителя через TempVars", _
+                          "{""panelDate"":""" & Format(targetDate, "yyyy-mm-dd") & """,""hasExecutor"":" & IIf(IsNull(executorId), "false", "true") & "}")
+            '#endregion
+
+            On Error Resume Next
+            TempVars.Remove "EventPanelDate"
+            TempVars.Remove "EventPanelExecutorID"
+            On Error GoTo ErrorHandler
+
+            TempVars.Add "EventPanelDate", DateValue(targetDate)
+            TempVars.Add "EventPanelExecutorID", executorId
+
+            .Requery
+
+            '#region agent log
+            Call DebugLog("run-pre", "H7", "Form_f_daily_planner.bas:RefreshEventPanel", "Requery выполнен по TempVars", _
+                          "{""panelDate"":""" & Format(targetDate, "yyyy-mm-dd") & """}")
+            '#endregion
+
+            '#region agent log
+            On Error Resume Next
+            .RecordsetClone.MoveLast
+            Call DebugLog("run-pre", "H9", "Form_f_daily_planner.bas:RefreshEventPanel", "Проверка фактических строк в подотчете", _
+                          "{""hasData"":" & IIf(.HasData, "true", "false") & ",""recordCount"":" & CStr(.RecordsetClone.RecordCount) & "}")
+            On Error GoTo ErrorHandler
+            '#endregion
+        End If
+    End With
+
+    '#region agent log
+    Call DebugLog("run-pre", "H4", "Form_f_daily_planner.bas:RefreshEventPanel", "После применения фильтра к подотчету", _
+                  "{""captionDate"":""" & Format(targetDate, "yyyy-mm-dd") & """,""dataPhaseEnabled"":" & IIf(dataPhaseEnabled, "true", "false") & "}")
+    '#endregion
+
+    Call ApplyEventPanelTheme
+
+    On Error Resume Next
+    Me.sub_rptEventInstances.Report.lbl_Day.Caption = Format(targetDate, "d mmmm yyyy ""г.""")
+    '#region agent log
+    Call DebugLog("run-pre", "H7", "Form_f_daily_planner.bas:RefreshEventPanel", "Финальная установка caption после темы", _
+                  "{""caption"":""" & EscapeJson(Me.sub_rptEventInstances.Report.lbl_Day.Caption) & """}")
+    '#endregion
+    On Error GoTo ErrorHandler
+
+    Exit Sub
+
+ErrorHandler:
+    ' Подотчет может быть недоступен во время ранней инициализации формы
+    '#region agent log
+    Call DebugLog("run-pre", "H4", "Form_f_daily_planner.bas:RefreshEventPanel", "Ошибка при обновлении панели", _
+                  "{""errNumber"":" & Err.Number & ",""errDescription"":""" & EscapeJson(Err.Description) & """}")
+    '#endregion
+End Sub
+
+'################################################################
+'########     Применение темы к панели событий дня       ########
+'################################################################
+Private Sub ApplyEventPanelTheme()
+    On Error GoTo ErrorHandler
+
+    ' Делегируем оформление самому отчету, чтобы не дублировать палитру.
+    Me.sub_rptEventInstances.Report.ApplyThemeFromHost
+
+    Exit Sub
+
+ErrorHandler:
+    ' Панель может быть недоступна до полной инициализации отчета
+End Sub
+
+'################################################################
+'########     Загрузка настройки «Текущий день»          ########
+'################################################################
+Private Sub LoadCurrentDaySetting()
+    On Error GoTo ErrorHandler
+    Dim db As DAO.Database
+    Dim rs As DAO.Recordset
+    Set db = CurrentDb
+
+    Set rs = db.OpenRecordset("SELECT SettingValue FROM tbSettings WHERE SettingName = 'CurrentDay'")
+
+    If Not rs.EOF Then
+        Me.chk_CurrentDay = (rs!settingValue = 1)
+    Else
+        Me.chk_CurrentDay = True
+    End If
+
+    rs.Close
+    Exit Sub
+ErrorHandler:
+    On Error Resume Next
+    Me.chk_CurrentDay = True
+    On Error GoTo 0
+End Sub
+
+'################################################################
+'########     Сохранение настройки «Текущий день»        ########
+'################################################################
+Private Sub SaveCurrentDaySetting()
+    On Error GoTo ErrorHandler
+    Dim db As DAO.Database
+
+    Set db = CurrentDb
+    db.Execute "DELETE FROM tbSettings WHERE SettingName = 'CurrentDay'"
+    db.Execute "INSERT INTO tbSettings (SettingName, SettingValue) VALUES ('CurrentDay', " & IIf(Me.chk_CurrentDay, "1", "0") & ")"
+    Exit Sub
+ErrorHandler:
 End Sub
 
 '################################################################
@@ -244,6 +458,9 @@ Public Sub BuildCalendar()
 
     ' Отображаем кнопку "Текущий месяц"
     Me.btn_current.Visible = (Month(CurrentMonth) <> Month(Date)) Or (Year(CurrentMonth) <> Year(Date))
+
+    ' Панель событий дня синхронизируется после отрисовки календаря
+    Call RefreshEventPanel
 End Sub
 
 '################################################################
@@ -367,7 +584,7 @@ Private Sub LoadEventData(ctrlEvent As Control, currentDate As Date)
 
     ' Проверка на корректность даты
     If Not IsDate(currentDate) Then
-        ctrlEvent.value = ""
+        ctrlEvent.Value = ""
         Exit Sub
     End If
 
@@ -400,8 +617,8 @@ Private Sub LoadEventData(ctrlEvent As Control, currentDate As Date)
     End If
 
     ' Фильтрация по исполнителю
-    If Not IsNull(Me.cboExecutorFilter.value) And Me.cboExecutorFilter.value <> "" Then
-        sqlWhere = sqlWhere & " AND ExecutorID = " & Me.cboExecutorFilter.value
+    If Not IsNull(Me.cboExecutorFilter.Value) And Me.cboExecutorFilter.Value <> "" Then
+        sqlWhere = sqlWhere & " AND ExecutorID = " & Me.cboExecutorFilter.Value
     End If
 
     ' Запрос для получения данных
@@ -443,21 +660,21 @@ Private Sub LoadEventData(ctrlEvent As Control, currentDate As Date)
 
     ' Формируем текст и применяем форматирование
     If pendingEvents <> "" And completedEvents <> "" Then
-        ctrlEvent.value = pendingEvents & vbCrLf & "----- Выполненные -----" & vbCrLf & completedEvents
+        ctrlEvent.Value = pendingEvents & vbCrLf & "----- Выполненные -----" & vbCrLf & completedEvents
         ctrlEvent.FontItalic = False
     ElseIf pendingEvents <> "" Then
-        ctrlEvent.value = pendingEvents
+        ctrlEvent.Value = pendingEvents
         ctrlEvent.FontItalic = False
     ElseIf completedEvents <> "" Then
         ' Если включена настройка "Скрыть выполненные" - не показываем выполненные события
         If Nz(Me.chkHideCompleted, False) Then
-            ctrlEvent.value = ""
+            ctrlEvent.Value = ""
         Else
-            ctrlEvent.value = "----- Выполненные -----" & vbCrLf & completedEvents
+            ctrlEvent.Value = "----- Выполненные -----" & vbCrLf & completedEvents
         End If
         ctrlEvent.FontItalic = True
     Else
-        ctrlEvent.value = ""
+        ctrlEvent.Value = ""
         ctrlEvent.FontItalic = False
     End If
 
@@ -467,7 +684,7 @@ Private Sub LoadEventData(ctrlEvent As Control, currentDate As Date)
     Exit Sub
 
 ErrorHandler:
-    ctrlEvent.value = "Ошибка загрузки"
+    ctrlEvent.Value = "Ошибка загрузки"
 
 End Sub
 '################################################################
@@ -532,6 +749,8 @@ Private Sub ApplyFormHeaderStyle()
     ' Надпись «Дни рождения»
     Me.lblChkShowBirthdays.ForeColor = HeaderTheme_Text
     Me.lblChkShowBirthdays.backColor = FormTheme_Back
+    Me.lblChkCurrentDay.ForeColor = HeaderTheme_Text
+    Me.lblChkCurrentDay.backColor = FormTheme_Back
 
     Me.btn_BirthdaysManage.backColor = HeaderTheme_Back
     Me.btn_BirthdaysManage.ForeColor = HeaderTheme_Text
@@ -600,6 +819,7 @@ Public Sub ApplyTheme(ThemeName As String, Optional showMessage As Boolean = Fal
 
     ' Перестраиваем календарь с новой темой
     Call BuildCalendar
+    Call ApplyEventPanelTheme
 
     ' Показываем сообщение если нужно
     If showMessage Then
@@ -709,6 +929,137 @@ End Sub
 Private Sub btn_theme_Click()
     ' Открытие формы выбора темы и ожидание выбора
     DoCmd.OpenForm "frmThemeSelector", , , , , acDialog
+End Sub
+
+'################################################################
+'########          Обработчики клика для выбора          ########
+'########              дня панели событий                ########
+'################################################################
+Private Sub fld_day_1_Click()
+    SelectDayForPanelByControl "fld_day_1"
+End Sub
+Private Sub fld_day_2_Click()
+    SelectDayForPanelByControl "fld_day_2"
+End Sub
+Private Sub fld_day_3_Click()
+    SelectDayForPanelByControl "fld_day_3"
+End Sub
+Private Sub fld_day_4_Click()
+    SelectDayForPanelByControl "fld_day_4"
+End Sub
+Private Sub fld_day_5_Click()
+    SelectDayForPanelByControl "fld_day_5"
+End Sub
+Private Sub fld_day_6_Click()
+    SelectDayForPanelByControl "fld_day_6"
+End Sub
+Private Sub fld_day_7_Click()
+    SelectDayForPanelByControl "fld_day_7"
+End Sub
+Private Sub fld_day_8_Click()
+    SelectDayForPanelByControl "fld_day_8"
+End Sub
+Private Sub fld_day_9_Click()
+    SelectDayForPanelByControl "fld_day_9"
+End Sub
+Private Sub fld_day_10_Click()
+    SelectDayForPanelByControl "fld_day_10"
+End Sub
+Private Sub fld_day_11_Click()
+    SelectDayForPanelByControl "fld_day_11"
+End Sub
+Private Sub fld_day_12_Click()
+    SelectDayForPanelByControl "fld_day_12"
+End Sub
+Private Sub fld_day_13_Click()
+    SelectDayForPanelByControl "fld_day_13"
+End Sub
+Private Sub fld_day_14_Click()
+    SelectDayForPanelByControl "fld_day_14"
+End Sub
+Private Sub fld_day_15_Click()
+    SelectDayForPanelByControl "fld_day_15"
+End Sub
+Private Sub fld_day_16_Click()
+    SelectDayForPanelByControl "fld_day_16"
+End Sub
+Private Sub fld_day_17_Click()
+    SelectDayForPanelByControl "fld_day_17"
+End Sub
+Private Sub fld_day_18_Click()
+    SelectDayForPanelByControl "fld_day_18"
+End Sub
+Private Sub fld_day_19_Click()
+    SelectDayForPanelByControl "fld_day_19"
+End Sub
+Private Sub fld_day_20_Click()
+    SelectDayForPanelByControl "fld_day_20"
+End Sub
+Private Sub fld_day_21_Click()
+    SelectDayForPanelByControl "fld_day_21"
+End Sub
+Private Sub fld_day_22_Click()
+    SelectDayForPanelByControl "fld_day_22"
+End Sub
+Private Sub fld_day_23_Click()
+    SelectDayForPanelByControl "fld_day_23"
+End Sub
+Private Sub fld_day_24_Click()
+    SelectDayForPanelByControl "fld_day_24"
+End Sub
+Private Sub fld_day_25_Click()
+    SelectDayForPanelByControl "fld_day_25"
+End Sub
+Private Sub fld_day_26_Click()
+    SelectDayForPanelByControl "fld_day_26"
+End Sub
+Private Sub fld_day_27_Click()
+    SelectDayForPanelByControl "fld_day_27"
+End Sub
+Private Sub fld_day_28_Click()
+    SelectDayForPanelByControl "fld_day_28"
+End Sub
+Private Sub fld_day_29_Click()
+    SelectDayForPanelByControl "fld_day_29"
+End Sub
+Private Sub fld_day_30_Click()
+    SelectDayForPanelByControl "fld_day_30"
+End Sub
+Private Sub fld_day_31_Click()
+    SelectDayForPanelByControl "fld_day_31"
+End Sub
+Private Sub fld_day_32_Click()
+    SelectDayForPanelByControl "fld_day_32"
+End Sub
+Private Sub fld_day_33_Click()
+    SelectDayForPanelByControl "fld_day_33"
+End Sub
+Private Sub fld_day_34_Click()
+    SelectDayForPanelByControl "fld_day_34"
+End Sub
+Private Sub fld_day_35_Click()
+    SelectDayForPanelByControl "fld_day_35"
+End Sub
+Private Sub fld_day_36_Click()
+    SelectDayForPanelByControl "fld_day_36"
+End Sub
+Private Sub fld_day_37_Click()
+    SelectDayForPanelByControl "fld_day_37"
+End Sub
+Private Sub fld_day_38_Click()
+    SelectDayForPanelByControl "fld_day_38"
+End Sub
+Private Sub fld_day_39_Click()
+    SelectDayForPanelByControl "fld_day_39"
+End Sub
+Private Sub fld_day_40_Click()
+    SelectDayForPanelByControl "fld_day_40"
+End Sub
+Private Sub fld_day_41_Click()
+    SelectDayForPanelByControl "fld_day_41"
+End Sub
+Private Sub fld_day_42_Click()
+    SelectDayForPanelByControl "fld_day_42"
 End Sub
 
 '################################################################
@@ -901,6 +1252,19 @@ Private Sub chk_ShowBirthdays_AfterUpdate()
 End Sub
 
 '################################################################
+'########      Чекбокс «Текущий день»                    ########
+'################################################################
+Private Sub chk_CurrentDay_AfterUpdate()
+    Call SaveCurrentDaySetting
+
+    If Nz(Me.chk_CurrentDay, True) Then
+        m_SelectedPanelDate = Date
+    End If
+
+    Call RefreshEventPanel
+End Sub
+
+'################################################################
 '########         Сохранение настройки фильтра          ########
 '################################################################
 Private Sub SaveHideCompletedSetting()
@@ -919,37 +1283,110 @@ End Sub
 '################################################################
 '########    Открытие формы дня по клику               ########
 '################################################################
+Private Function ResolveCalendarDateByControlName(ByVal controlName As String) As Date
+    Dim dayNumber As Integer
+    Dim firstVisibleDate As Date
+
+    dayNumber = CInt(Mid(controlName, 9))
+    firstVisibleDate = CurrentMonth - weekday(CurrentMonth, vbMonday) + 1
+    ResolveCalendarDateByControlName = DateAdd("d", dayNumber - 1, firstVisibleDate)
+End Function
+
+'################################################################
+'########    Выбор дня календаря для панели             ########
+'################################################################
+Private Sub SelectDayForPanelByControl(ByVal controlName As String)
+    On Error GoTo ExitSub
+
+    '#region agent log
+    Call DebugLog("run-pre", "H1", "Form_f_daily_planner.bas:SelectDayForPanelByControl", "Клик по дню календаря для панели", _
+                  "{""controlName"":""" & EscapeJson(controlName) & """,""chkCurrentDay"":" & IIf(Nz(Me.chk_CurrentDay, True), "true", "false") & "}")
+    '#endregion
+
+    If Nz(Me.chk_CurrentDay, True) Then Exit Sub
+
+    m_SelectedPanelDate = ResolveCalendarDateByControlName(controlName)
+
+    '#region agent log
+    Call DebugLog("run-pre", "H1", "Form_f_daily_planner.bas:SelectDayForPanelByControl", "Обновили выбранную дату панели", _
+                  "{""controlName"":""" & EscapeJson(controlName) & """,""selectedPanelDate"":""" & Format(m_SelectedPanelDate, "yyyy-mm-dd") & """}")
+    '#endregion
+
+    Call RefreshEventPanel
+
+ExitSub:
+End Sub
+
+'################################################################
+'########            Вспомогательный debug-log            ########
+'################################################################
+Private Function EscapeJson(ByVal value As String) As String
+    value = Replace(value, "\", "\\")
+    value = Replace(value, """", "\""")
+    value = Replace(value, vbCrLf, "\n")
+    value = Replace(value, vbCr, "\n")
+    value = Replace(value, vbLf, "\n")
+    EscapeJson = value
+End Function
+
+Private Sub DebugLog(ByVal runId As String, ByVal hypothesisId As String, ByVal location As String, ByVal message As String, ByVal dataJson As String)
+    On Error GoTo FallbackPath
+
+    Dim filePath As String
+    Dim fallbackPath As String
+    Dim fileNo As Integer
+    Dim lineText As String
+    Dim ts As String
+
+    filePath = "d:\Planner\debug-b46d7b.log"
+    fallbackPath = CurrentProject.Path & "\debug-b46d7b.log"
+    ts = Format$(Now, "yyyy-mm-dd\THH:nn:ss")
+
+    lineText = "{""sessionId"":""b46d7b"",""runId"":""" & EscapeJson(runId) & """,""hypothesisId"":""" & EscapeJson(hypothesisId) & """,""location"":""" & EscapeJson(location) & """,""message"":""" & EscapeJson(message) & """,""data"":" & dataJson & ",""timestamp"":""" & ts & """}"
+
+    fileNo = FreeFile
+    Open filePath For Append As #fileNo
+    Print #fileNo, lineText
+    Close #fileNo
+    Exit Sub
+
+FallbackPath:
+    On Error GoTo GiveUp
+    fileNo = FreeFile
+    Open fallbackPath For Append As #fileNo
+    Print #fileNo, lineText
+    Close #fileNo
+    Exit Sub
+
+GiveUp:
+    On Error Resume Next
+End Sub
+
+'################################################################
+'########    Открытие формы дня по клику               ########
+'################################################################
 Private Sub OpenDayEventsByControl(controlName As String)
     On Error GoTo ErrorHandler
 
-    Dim DayNumber As Integer
-    Dim monthYear As String
     Dim clickDate As Date
     Dim executorFilter As String
 
-    ' Извлекаем номер дня из имени элемента
-    DayNumber = CInt(Mid(controlName, 9))
+    clickDate = ResolveCalendarDateByControlName(controlName)
+    m_SelectedPanelDate = clickDate
+    Call RefreshEventPanel
 
-    ' Проверяем, что в ячейке есть число
-    If IsNumeric(Me.Controls("lbl_day_" & DayNumber).Caption) Then
-        monthYear = Me.lbl_MonthYear.Caption
-        clickDate = CStr(Me.Controls("lbl_day_" & DayNumber).Caption) & " " & monthYear
-
-        ' Формируем фильтр по исполнителю
-        If Not IsNull(Me.cboExecutorFilter.value) And Me.cboExecutorFilter.value <> "" Then
-            executorFilter = " AND ExecutorID = " & Me.cboExecutorFilter.value
-        Else
-            executorFilter = ""
-        End If
-
-        ' Открываем форму и передаем дату и фильтр
-        DoCmd.OpenForm "frmDayEvents"
-        Forms!frmDayEvents.RecordSource = "SELECT * FROM tbEventInstances WHERE EventDate = " & _
-                                          Format(clickDate, "\#mm\/dd\/yyyy\#") & executorFilter
-        Forms!frmDayEvents.lblDate.Caption = Format(clickDate, "d mmmm yyyy ""г.""")
+    ' Формируем фильтр по исполнителю
+    If Not IsNull(Me.cboExecutorFilter.Value) And Me.cboExecutorFilter.Value <> "" Then
+        executorFilter = " AND ExecutorID = " & Me.cboExecutorFilter.Value
     Else
-        MsgBox "Неверная дата дня", vbExclamation
+        executorFilter = ""
     End If
+
+    ' Открываем форму и передаем дату и фильтр
+    DoCmd.OpenForm "frmDayEvents"
+    Forms!frmDayEvents.RecordSource = "SELECT * FROM tbEventInstances WHERE EventDate = " & _
+                                      Format(clickDate, "\#mm\/dd\/yyyy\#") & executorFilter
+    Forms!frmDayEvents.lblDate.Caption = Format(clickDate, "d mmmm yyyy ""г.""")
 
     Exit Sub
 
@@ -970,16 +1407,16 @@ End Function
 '########          Затемнение цвета                    ########
 '################################################################
 Private Function DarkenColor(originalColor As Long, factor As Double) As Long
-    Dim R As Integer, G As Integer, b As Integer
-    R = originalColor Mod 256
-    G = (originalColor \ 256) Mod 256
+    Dim r As Integer, g As Integer, b As Integer
+    r = originalColor Mod 256
+    g = (originalColor \ 256) Mod 256
     b = (originalColor \ 65536) Mod 256
 
-    R = R * factor
-    G = G * factor
+    r = r * factor
+    g = g * factor
     b = b * factor
 
-    DarkenColor = RGB(R, G, b)
+    DarkenColor = RGB(r, g, b)
 End Function
 
 '################################################################
@@ -1005,16 +1442,16 @@ Public Sub InitializeExecutorFilter()
     Set rs = db.OpenRecordset("SELECT SettingValue FROM tbSettings WHERE SettingName = 'SelectedExecutor'")
 
     If Not rs.EOF And Not IsNull(rs!settingValue) Then
-        Me.cboExecutorFilter.value = rs!settingValue
+        Me.cboExecutorFilter.Value = rs!settingValue
     Else
-        Me.cboExecutorFilter.value = ""
+        Me.cboExecutorFilter.Value = ""
     End If
 
     rs.Close
     Exit Sub
 
 ErrorHandler:
-    Me.cboExecutorFilter.value = ""
+    Me.cboExecutorFilter.Value = ""
     If Not rs Is Nothing Then rs.Close
 End Sub
 
@@ -1028,7 +1465,7 @@ Private Sub SaveExecutorSetting()
     Dim ExecutorID As Variant
 
     Set db = CurrentDb
-    ExecutorID = Me.cboExecutorFilter.value
+    ExecutorID = Me.cboExecutorFilter.Value
 
     ' Удаляем старую запись
     db.Execute "DELETE FROM tbSettings WHERE SettingName = 'SelectedExecutor'"
@@ -1057,6 +1494,9 @@ Private Sub cboExecutorFilter_AfterUpdate()
 
     ' Перестраиваем календарь с новым фильтром
     Call BuildCalendar
+
+    ' Синхронно обновляем панель событий дня тем же фильтром исполнителя
+    Call RefreshEventPanel
 
     Exit Sub
 
@@ -1121,4 +1561,3 @@ End Sub
 Public Sub ApplyHideCompletedFilter()
     Call chkHideCompleted_AfterUpdate
 End Sub
-
