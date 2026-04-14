@@ -22,12 +22,12 @@ Public Sub AgentDbgLog(ByVal hid As String, ByVal loc As String, ByVal msg As St
     Const MIRROR As String = "d:\Planner\debug-3cec1e.log"
     On Error Resume Next
     line = "{""sessionId"":""3cec1e"",""hid"":""" & AgentJsonEsc(hid) & """,""loc"":""" & AgentJsonEsc(loc) & """,""msg"":""" & AgentJsonEsc(msg) & """,""data"":" & dataJson & ",""ts"":" & CLng(Timer * 1000) & "}"
-    p = CurrentProject.Path & "\debug-3cec1e.log"
+    p = CurrentProject.path & "\debug-3cec1e.log"
     f = FreeFile
     Open p For Append As #f
     Print #f, line
     Close #f
-    If LCase$(CurrentProject.Path) <> "d:\planner" Then
+    If LCase$(CurrentProject.path) <> "d:\planner" Then
         f = FreeFile
         Open MIRROR For Append As #f
         Print #f, line

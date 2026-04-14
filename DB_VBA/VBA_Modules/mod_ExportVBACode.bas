@@ -109,7 +109,7 @@ Private Sub RunExport(ByVal exportMode As Long)
     Dim sLine As String
 
     Set db = CurrentDb
-    BASE_PATH = CurrentProject.Path & "\DB_VBA"
+    BASE_PATH = CurrentProject.path & "\DB_VBA"
 
     lngFormsExported = 0
     lngReportsExported = 0

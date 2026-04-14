@@ -648,13 +648,13 @@ End Function
 Private Function ReportExistsSimple(reportName As String) As Boolean
     On Error GoTo ErrorHandler
 
-    Dim R As AccessObject
-    For Each R In CurrentProject.AllReports
-        If StrComp(R.Name, reportName, vbTextCompare) = 0 Then
+    Dim r As AccessObject
+    For Each r In CurrentProject.AllReports
+        If StrComp(r.Name, reportName, vbTextCompare) = 0 Then
             ReportExistsSimple = True
             Exit Function
         End If
-    Next R
+    Next r
 
 ErrorHandler:
     ReportExistsSimple = False
@@ -868,7 +868,7 @@ Public Sub ShowProjectInfo()
 
 ErrorHandler:
     Debug.Print "Ошибка получения информации о проекте: " & Err.description
-End Function
+End Sub
 
 '########################################################################
 '########           ПОЛНЫЙ АНАЛИЗ ВСЕХ ЭЛЕМЕНТОВ ФОРМЫ          ########
@@ -1246,13 +1246,13 @@ Private Sub ПроанализироватьТаблицуПериодичнос
 End Sub
 
 '########################################################################
-'########           ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ                     ########
+'########            ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ                     ########
 '########################################################################
 
 '########################################################################
-'########           ПРОВЕРКА СУЩЕСТВОВАНИЯ ТАБЛИЦЫ             ########
+'########            ПРОВЕРКА СУЩЕСТВОВАНИЯ ТАБЛИЦЫ              ########
 '########################################################################
-Private Function ТаблицаСуществует(имяТаблицы As String) As Boolean
+Private Function ТаблицаСуществует(ByVal имяТаблицы As String) As Boolean
     On Error GoTo Ошибка
 
     Dim проверка As Variant
@@ -1454,7 +1454,7 @@ ErrorHandler:
 End Sub
 
 '########################################################################
-'########           ПОЛУЧЕНИЕ ТОЛЬКО ФОРМ              ########
+'########                  ПОЛУЧЕНИЕ ТОЛЬКО ФОРМ                 ########
 '########################################################################
 Public Sub GetFormsList()
     On Error GoTo ErrorHandler

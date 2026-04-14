@@ -60,7 +60,7 @@ Private Sub FillTableConnections()
 
     ' ПУТЬ ПО УМОЛЧАНИЮ К BACKEND
     Dim defaultPath As String
-    defaultPath = CurrentProject.Path & "\BE\Planner_BE.accdb"
+    defaultPath = CurrentProject.path & "\BE\Planner_BE.accdb"
 
     ' ОЧИЩАЕМ ТАБЛИЦУ
     db.Execute "DELETE FROM tbTableConnections"
@@ -275,7 +275,7 @@ Private Function BrowseForBackendFile() As String
     Dim defaultPath As String
 
     ' ПОЛУЧАЕМ ПУТЬ ПО УМОЛЧАНИЮ ДЛЯ СООБЩЕНИЯ
-    defaultPath = CurrentProject.Path & "\BE\Planner_BE.accdb"
+    defaultPath = CurrentProject.path & "\BE\Planner_BE.accdb"
 
     ' ПОКАЗЫВАЕМ СООБЩЕНИЕ О ТОМ ЧТО ФАЙЛ НЕ НАЙДЕН
     MsgBox "Файл базы данных не найден по пути:" & vbCrLf & _

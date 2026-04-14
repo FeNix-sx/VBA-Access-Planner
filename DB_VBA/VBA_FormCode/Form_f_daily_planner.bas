@@ -24,7 +24,7 @@ Dim FormTheme_Back As Long
 Private Const TWIPS_DAILY_PLANNER_LEFT As Long = 500
 Private Const TWIPS_DAILY_PLANNER_TOP As Long = 1000
 Private Const TWIPS_FORM_BASE_WIDTH As Long = 21800
-Private Const TWIPS_FORM_HEIGHT As Long = 14400
+Private Const TWIPS_FORM_HEIGHT As Long = 14000
 Private Const TWIPS_BIRTHDAYS_PANEL_EXTRA_WIDTH As Long = 3300
 
 '################################################################
@@ -43,7 +43,7 @@ End Sub
 '########            Фильтр исполнителей                 ########
 '################################################################
 Private Sub cboExecutorFilter_DblClick(Cancel As Integer)
-    Me.cboExecutorFilter.Value = Null
+    Me.cboExecutorFilter.value = Null
     Call cboExecutorFilter_AfterUpdate
 End Sub
 
@@ -153,27 +153,27 @@ Private Function BuildEventPanelFilter(ByVal targetDate As Date) As String
 
     filterText = "EventDate = #" & Format(DateValue(targetDate), "mm\/dd\/yyyy") & "#"
 
-    If Not IsNull(Me.cboExecutorFilter.Value) And Me.cboExecutorFilter.Value <> "" Then
-        filterText = filterText & " AND ExecutorID = " & CLng(Me.cboExecutorFilter.Value)
+    If Not IsNull(Me.cboExecutorFilter.value) And Me.cboExecutorFilter.value <> "" Then
+        filterText = filterText & " AND ExecutorID = " & CLng(Me.cboExecutorFilter.value)
     End If
 
     BuildEventPanelFilter = filterText
 
     '#region agent log
     Call DebugLog("run-pre", "H3", "Form_f_daily_planner.bas:BuildEventPanelFilter", "Собран фильтр панели", _
-                  "{""targetDate"":""" & Format(targetDate, "yyyy-mm-dd") & """,""executorFilterApplied"":" & IIf(Not IsNull(Me.cboExecutorFilter.Value) And Me.cboExecutorFilter.Value <> "", "true", "false") & ",""filterText"":""" & EscapeJson(filterText) & """}")
+                  "{""targetDate"":""" & Format(targetDate, "yyyy-mm-dd") & """,""executorFilterApplied"":" & IIf(Not IsNull(Me.cboExecutorFilter.value) And Me.cboExecutorFilter.value <> "", "true", "false") & ",""filterText"":""" & EscapeJson(filterText) & """}")
     '#endregion
 End Function
 
 '################################################################
 '########      Подсчет событий для выбранной даты         ########
 '################################################################
-Private Function CountEventsForPanelDate(ByVal targetDate As Date, ByVal executorId As Variant) As Long
+Private Function CountEventsForPanelDate(ByVal targetDate As Date, ByVal ExecutorID As Variant) As Long
     Dim whereText As String
 
     whereText = "EventDate = #" & Format(DateValue(targetDate), "mm\/dd\/yyyy") & "#"
-    If Not IsNull(executorId) Then
-        whereText = whereText & " AND ExecutorID = " & CLng(executorId)
+    If Not IsNull(ExecutorID) Then
+        whereText = whereText & " AND ExecutorID = " & CLng(ExecutorID)
     End If
 
     CountEventsForPanelDate = DCount("*", "tbEventInstances", whereText)
@@ -188,17 +188,25 @@ Private Sub RefreshEventPanel()
     Dim targetDate As Date
     Dim filterText As String
     Dim dataPhaseEnabled As Boolean
-    Dim executorId As Variant
+    Dim ExecutorID As Variant
     Dim expectedRows As Long
 
     targetDate = GetPanelTargetDate()
     filterText = BuildEventPanelFilter(targetDate)
     dataPhaseEnabled = True
-    executorId = Null
-    If Not IsNull(Me.cboExecutorFilter.Value) And Me.cboExecutorFilter.Value <> "" Then
-        executorId = CLng(Me.cboExecutorFilter.Value)
+    ExecutorID = Null
+    If Not IsNull(Me.cboExecutorFilter.value) And Me.cboExecutorFilter.value <> "" Then
+        ExecutorID = CLng(Me.cboExecutorFilter.value)
     End If
-    expectedRows = CountEventsForPanelDate(targetDate, executorId)
+    expectedRows = CountEventsForPanelDate(targetDate, ExecutorID)
+
+    If Not IsEventPanelReportReady() Then
+        '#region agent log
+        Call DebugLog("run-pre", "H4", "Form_f_daily_planner.bas:RefreshEventPanel", "Подотчет панели еще не готов, пропускаем обновление", _
+                      "{""targetDate"":""" & Format(targetDate, "yyyy-mm-dd") & """}")
+        '#endregion
+        Exit Sub
+    End If
 
     '#region agent log
     Call DebugLog("run-pre", "H4", "Form_f_daily_planner.bas:RefreshEventPanel", "Перед применением фильтра к подотчету", _
@@ -224,7 +232,7 @@ Private Sub RefreshEventPanel()
         If dataPhaseEnabled Then
             '#region agent log
             Call DebugLog("run-pre", "H7", "Form_f_daily_planner.bas:RefreshEventPanel", "Передаем дату/исполнителя через TempVars", _
-                          "{""panelDate"":""" & Format(targetDate, "yyyy-mm-dd") & """,""hasExecutor"":" & IIf(IsNull(executorId), "false", "true") & "}")
+                          "{""panelDate"":""" & Format(targetDate, "yyyy-mm-dd") & """,""hasExecutor"":" & IIf(IsNull(ExecutorID), "false", "true") & "}")
             '#endregion
 
             On Error Resume Next
@@ -233,7 +241,7 @@ Private Sub RefreshEventPanel()
             On Error GoTo ErrorHandler
 
             TempVars.Add "EventPanelDate", DateValue(targetDate)
-            TempVars.Add "EventPanelExecutorID", executorId
+            TempVars.Add "EventPanelExecutorID", ExecutorID
 
             .Requery
 
@@ -246,7 +254,7 @@ Private Sub RefreshEventPanel()
             On Error Resume Next
             .RecordsetClone.MoveLast
             Call DebugLog("run-pre", "H9", "Form_f_daily_planner.bas:RefreshEventPanel", "Проверка фактических строк в подотчете", _
-                          "{""hasData"":" & IIf(.HasData, "true", "false") & ",""recordCount"":" & CStr(.RecordsetClone.RecordCount) & "}")
+                          "{""hasData"":" & IIf(.HasData, "true", "false") & ",""recordCount"":" & CStr(.RecordsetClone.recordCount) & "}")
             On Error GoTo ErrorHandler
             '#endregion
         End If
@@ -273,7 +281,7 @@ ErrorHandler:
     ' Подотчет может быть недоступен во время ранней инициализации формы
     '#region agent log
     Call DebugLog("run-pre", "H4", "Form_f_daily_planner.bas:RefreshEventPanel", "Ошибка при обновлении панели", _
-                  "{""errNumber"":" & Err.Number & ",""errDescription"":""" & EscapeJson(Err.Description) & """}")
+                  "{""errNumber"":" & Err.Number & ",""errDescription"":""" & EscapeJson(Err.description) & """}")
     '#endregion
 End Sub
 
@@ -599,7 +607,7 @@ Private Sub LoadEventData(ctrlEvent As Control, currentDate As Date)
 
     ' Проверка на корректность даты
     If Not IsDate(currentDate) Then
-        ctrlEvent.Value = ""
+        ctrlEvent.value = ""
         Exit Sub
     End If
 
@@ -632,8 +640,8 @@ Private Sub LoadEventData(ctrlEvent As Control, currentDate As Date)
     End If
 
     ' Фильтрация по исполнителю
-    If Not IsNull(Me.cboExecutorFilter.Value) And Me.cboExecutorFilter.Value <> "" Then
-        sqlWhere = sqlWhere & " AND ExecutorID = " & Me.cboExecutorFilter.Value
+    If Not IsNull(Me.cboExecutorFilter.value) And Me.cboExecutorFilter.value <> "" Then
+        sqlWhere = sqlWhere & " AND ExecutorID = " & Me.cboExecutorFilter.value
     End If
 
     ' Запрос для получения данных
@@ -675,21 +683,21 @@ Private Sub LoadEventData(ctrlEvent As Control, currentDate As Date)
 
     ' Формируем текст и применяем форматирование
     If pendingEvents <> "" And completedEvents <> "" Then
-        ctrlEvent.Value = pendingEvents & vbCrLf & "----- Выполненные -----" & vbCrLf & completedEvents
+        ctrlEvent.value = pendingEvents & vbCrLf & "----- Выполненные -----" & vbCrLf & completedEvents
         ctrlEvent.FontItalic = False
     ElseIf pendingEvents <> "" Then
-        ctrlEvent.Value = pendingEvents
+        ctrlEvent.value = pendingEvents
         ctrlEvent.FontItalic = False
     ElseIf completedEvents <> "" Then
         ' Если включена настройка "Скрыть выполненные" - не показываем выполненные события
         If Nz(Me.chkHideCompleted, False) Then
-            ctrlEvent.Value = ""
+            ctrlEvent.value = ""
         Else
-            ctrlEvent.Value = "----- Выполненные -----" & vbCrLf & completedEvents
+            ctrlEvent.value = "----- Выполненные -----" & vbCrLf & completedEvents
         End If
         ctrlEvent.FontItalic = True
     Else
-        ctrlEvent.Value = ""
+        ctrlEvent.value = ""
         ctrlEvent.FontItalic = False
     End If
 
@@ -699,7 +707,7 @@ Private Sub LoadEventData(ctrlEvent As Control, currentDate As Date)
     Exit Sub
 
 ErrorHandler:
-    ctrlEvent.Value = "Ошибка загрузки"
+    ctrlEvent.value = "Ошибка загрузки"
 
 End Sub
 '################################################################
@@ -835,6 +843,12 @@ Public Sub ApplyTheme(ThemeName As String, Optional showMessage As Boolean = Fal
     ' Перестраиваем календарь с новой темой
     Call BuildCalendar
     Call ApplyEventPanelTheme
+    On Error Resume Next
+    Me.sub_rptEventInstances.Report.ApplyThemeFromHost True
+    On Error GoTo ErrorHandler
+    On Error Resume Next
+    Me.sub_rptBirthdays.Report.ApplyThemeFromHost
+    On Error GoTo ErrorHandler
 
     ' Показываем сообщение если нужно
     If showMessage Then
@@ -1299,12 +1313,12 @@ End Sub
 '########    Открытие формы дня по клику               ########
 '################################################################
 Private Function ResolveCalendarDateByControlName(ByVal controlName As String) As Date
-    Dim dayNumber As Integer
+    Dim DayNumber As Integer
     Dim firstVisibleDate As Date
 
-    dayNumber = CInt(Mid(controlName, 9))
+    DayNumber = CInt(Mid(controlName, 9))
     firstVisibleDate = CurrentMonth - weekday(CurrentMonth, vbMonday) + 1
-    ResolveCalendarDateByControlName = DateAdd("d", dayNumber - 1, firstVisibleDate)
+    ResolveCalendarDateByControlName = DateAdd("d", DayNumber - 1, firstVisibleDate)
 End Function
 
 '################################################################
@@ -1348,13 +1362,13 @@ Private Sub DebugLog(ByVal runId As String, ByVal hypothesisId As String, ByVal 
     On Error GoTo FallbackPath
 
     Dim filePath As String
-    Dim fallbackPath As String
+    Dim FallbackPath As String
     Dim fileNo As Integer
     Dim lineText As String
     Dim ts As String
 
     filePath = "d:\Planner\debug-b46d7b.log"
-    fallbackPath = CurrentProject.Path & "\debug-b46d7b.log"
+    FallbackPath = CurrentProject.path & "\debug-b46d7b.log"
     ts = Format$(Now, "yyyy-mm-dd\THH:nn:ss")
 
     lineText = "{""sessionId"":""b46d7b"",""runId"":""" & EscapeJson(runId) & """,""hypothesisId"":""" & EscapeJson(hypothesisId) & """,""location"":""" & EscapeJson(location) & """,""message"":""" & EscapeJson(message) & """,""data"":" & dataJson & ",""timestamp"":""" & ts & """}"
@@ -1368,7 +1382,7 @@ Private Sub DebugLog(ByVal runId As String, ByVal hypothesisId As String, ByVal 
 FallbackPath:
     On Error GoTo GiveUp
     fileNo = FreeFile
-    Open fallbackPath For Append As #fileNo
+    Open FallbackPath For Append As #fileNo
     Print #fileNo, lineText
     Close #fileNo
     Exit Sub
@@ -1391,8 +1405,8 @@ Private Sub OpenDayEventsByControl(controlName As String)
     Call RefreshEventPanel
 
     ' Формируем фильтр по исполнителю
-    If Not IsNull(Me.cboExecutorFilter.Value) And Me.cboExecutorFilter.Value <> "" Then
-        executorFilter = " AND ExecutorID = " & Me.cboExecutorFilter.Value
+    If Not IsNull(Me.cboExecutorFilter.value) And Me.cboExecutorFilter.value <> "" Then
+        executorFilter = " AND ExecutorID = " & Me.cboExecutorFilter.value
     Else
         executorFilter = ""
     End If
@@ -1457,16 +1471,16 @@ Public Sub InitializeExecutorFilter()
     Set rs = db.OpenRecordset("SELECT SettingValue FROM tbSettings WHERE SettingName = 'SelectedExecutor'")
 
     If Not rs.EOF And Not IsNull(rs!settingValue) Then
-        Me.cboExecutorFilter.Value = rs!settingValue
+        Me.cboExecutorFilter.value = rs!settingValue
     Else
-        Me.cboExecutorFilter.Value = ""
+        Me.cboExecutorFilter.value = ""
     End If
 
     rs.Close
     Exit Sub
 
 ErrorHandler:
-    Me.cboExecutorFilter.Value = ""
+    Me.cboExecutorFilter.value = ""
     If Not rs Is Nothing Then rs.Close
 End Sub
 
@@ -1480,7 +1494,7 @@ Private Sub SaveExecutorSetting()
     Dim ExecutorID As Variant
 
     Set db = CurrentDb
-    ExecutorID = Me.cboExecutorFilter.Value
+    ExecutorID = Me.cboExecutorFilter.value
 
     ' Удаляем старую запись
     db.Execute "DELETE FROM tbSettings WHERE SettingName = 'SelectedExecutor'"
@@ -1576,3 +1590,5 @@ End Sub
 Public Sub ApplyHideCompletedFilter()
     Call chkHideCompleted_AfterUpdate
 End Sub
+
+

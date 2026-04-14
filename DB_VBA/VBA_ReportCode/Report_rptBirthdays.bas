@@ -1,4 +1,4 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
 
 '################################################################
@@ -230,6 +230,19 @@ Private Sub Report_Activate()
 End Sub
 
 '################################################################
+'########      ПУБЛИЧНЫЙ ВХОД ДЛЯ ХОСТ-ФОРМЫ             ########
+'################################################################
+Public Sub ApplyThemeFromHost()
+' Назначение: Немедленно применяет текущую палитру к статичному заголовку отчёта.
+'================================================================
+    On Error GoTo ExitSub
+    If CurrentTheme_Back = 0 And OtherTheme_Back = 0 Then LoadPaletteFromDB
+    ApplyFldTitleHeaderTheme
+    Me.Requery
+ExitSub:
+End Sub
+
+'################################################################
 '########         GROUPHEADER0 — СОБЫТИЕ FORMAT          ########
 '################################################################
 Private Sub GroupHeader0_Format(Cancel As Integer, FormatCount As Integer)
@@ -288,4 +301,8 @@ Private Sub Detail_Paint()
     dayDiff = DateDiff("d", DateValue(occ), Date)
     ApplyDetailColors dayDiff
 End Sub
+
+
+
+
 

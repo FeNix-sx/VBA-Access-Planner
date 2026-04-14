@@ -237,39 +237,31 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########           ОТКРЫТИЕ ПРИЛОЖЕННОГО ФАЙЛА          ########
+'########     ОТКРЫТИЕ ВЛОЖЕНИЯ ПО ПУТИ (файл или папка) ########
 '################################################################
-Private Sub cmdOpenFile_Click()
+Private Sub OpenAttachmentHyperlink(ByVal strPath As String)
+' Назначение: Открывает файл или папку по пути вложения (как в проводнике).
+' Принцип:    Dir + FollowHyperlink; песочные часы на время вызова.
+'================================================================
     On Error GoTo ErrorHandler
     
-    If Not IsNull(Me.AttachmentPath) And Me.AttachmentPath <> "" Then
-        ' Проверяем существует ли файл
-        If Dir(Me.AttachmentPath) <> "" Then
-            ' Показываем уведомление о начале открытия
-            DoCmd.Hourglass True
-            Me.cmdOpenFile.Caption = "Открывается..."
-            Me.cmdOpenFile.Enabled = False
-            Me.Repaint
-            
-            ' Открываем файл
-            FollowHyperlink Me.AttachmentPath
-            
-            ' Восстанавливаем кнопку
-            Me.cmdOpenFile.Caption = "Открыть файл"
-            Me.cmdOpenFile.Enabled = True
-            DoCmd.Hourglass False
-        Else
-            MsgBox "Файл не найден: " & Me.AttachmentPath, vbExclamation
-        End If
+    strPath = Trim$(strPath)
+    If strPath = "" Then Exit Sub
+    
+    If Dir(strPath, vbDirectory) = "" Then
+        MsgBox "Файл или папка не найдены: " & strPath, vbExclamation
+        Exit Sub
     End If
+    
+    DoCmd.Hourglass True
+    Me.Repaint
+    FollowHyperlink strPath
+    DoCmd.Hourglass False
     Exit Sub
     
 ErrorHandler:
-    ' Восстанавливаем кнопку при ошибке
-    Me.cmdOpenFile.Caption = "Открыть файл"
-    Me.cmdOpenFile.Enabled = True
     DoCmd.Hourglass False
-    MsgBox "Ошибка открытия файла: " & Err.description, vbCritical
+    MsgBox "Ошибка открытия: " & Err.description, vbCritical
 End Sub
 
 '################################################################
@@ -319,24 +311,11 @@ Private Sub txtAttachmentPath_DblClick(Cancel As Integer)
     On Error GoTo ErrorHandler
     
     If Not IsNull(Me.txtAttachmentPath) And Me.txtAttachmentPath <> "" Then
-        ' Проверяем существует ли файл или папка
-        If Dir(Me.txtAttachmentPath, vbDirectory) <> "" Then
-            ' Показываем уведомление о начале открытия
-            DoCmd.Hourglass True
-            Me.Repaint
-            
-            ' Открываем файл или папку
-            FollowHyperlink Me.txtAttachmentPath
-            
-            DoCmd.Hourglass False
-        Else
-            MsgBox "Файл или папка не найдены: " & Me.txtAttachmentPath, vbExclamation
-        End If
+        OpenAttachmentHyperlink CStr(Me.txtAttachmentPath)
     End If
     Exit Sub
     
 ErrorHandler:
-    ' Восстанавливаем цвет при ошибке
     Me.txtAttachmentPath.backColor = RGB(255, 255, 255)
     DoCmd.Hourglass False
     MsgBox "Ошибка открытия файла/папки: " & Err.description, vbCritical
@@ -491,3 +470,5 @@ End Sub
 Public Sub CloseForm()
     Call cmdClose_Click  ' < ЭТОТ МЕТОД ДОЛЖЕН БЫТЬ
 End Sub
+
+

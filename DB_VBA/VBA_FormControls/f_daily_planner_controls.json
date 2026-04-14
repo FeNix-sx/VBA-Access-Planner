@@ -3,7 +3,7 @@
   "recordSource": "",
   "controls": [
     {
-      "name": "Надпись1",
+      "name": "lbl_Monday",
       "type": 100,
       "controlTypeName": "Type100",
       "controlSource": "",
@@ -12,7 +12,7 @@
     }
 ,
     {
-      "name": "Надпись2",
+      "name": "lbl_Tuesday",
       "type": 100,
       "controlTypeName": "Type100",
       "controlSource": "",
@@ -21,7 +21,7 @@
     }
 ,
     {
-      "name": "Надпись3",
+      "name": "lbl_Wednesday",
       "type": 100,
       "controlTypeName": "Type100",
       "controlSource": "",
@@ -30,7 +30,7 @@
     }
 ,
     {
-      "name": "Надпись4",
+      "name": "lbl_Thursday",
       "type": 100,
       "controlTypeName": "Type100",
       "controlSource": "",
@@ -39,7 +39,7 @@
     }
 ,
     {
-      "name": "Надпись5",
+      "name": "lbl_Friday",
       "type": 100,
       "controlTypeName": "Type100",
       "controlSource": "",
@@ -48,7 +48,7 @@
     }
 ,
     {
-      "name": "Надпись6",
+      "name": "lbl_Saturday",
       "type": 100,
       "controlTypeName": "Type100",
       "controlSource": "",
@@ -57,7 +57,7 @@
     }
 ,
     {
-      "name": "Надпись7",
+      "name": "lbl_Sunday",
       "type": 100,
       "controlTypeName": "Type100",
       "controlSource": "",
@@ -243,6 +243,24 @@
       "controlSource": "",
       "rowSource": "",
       "tabIndex": 9
+    }
+,
+    {
+      "name": "chk_CurrentDay",
+      "type": 106,
+      "controlTypeName": "Label",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 10
+    }
+,
+    {
+      "name": "lblChkCurrentDay",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
     }
 ,
     {
@@ -1008,6 +1026,15 @@
       "controlSource": "",
       "rowSource": "",
       "tabIndex": 42
+    }
+,
+    {
+      "name": "sub_rptEventInstances",
+      "type": 112,
+      "controlTypeName": "ListBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 43
     }
 ,
     {

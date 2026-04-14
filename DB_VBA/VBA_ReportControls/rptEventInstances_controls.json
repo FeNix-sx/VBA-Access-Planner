@@ -1,0 +1,60 @@
+﻿{
+  "reportName": "rptEventInstances",
+  "recordSource": "SELECT InstanceID, EventDate, EventNote, CompletionDate, CompletionMark, IIf(IsNull([CompletionDate]),0,1) AS IsCompleted FROM tbEventInstances WHERE [EventDate] >= Date() AND [EventDate] < Date() + 1; ",
+  "controls": [
+    {
+      "name": "lbl_Day",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_Number",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "lbl_EventNote",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_Completed",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "=IIf(Nz([IsCompleted],0)=1,\"Выполненные\",\"\")",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_Number",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "=1",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
+      "name": "fld_EventNote",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "EventNote",
+      "rowSource": "",
+      "tabIndex": 1
+    }
+
+  ]
+}

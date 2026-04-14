@@ -276,7 +276,7 @@ Public Sub EnsureRptBirthdaysFromExportFile()
     On Error GoTo Err_Handler
 
     Dim sPath As String
-    sPath = CurrentProject.Path & REL_PATH
+    sPath = CurrentProject.path & REL_PATH
 
     If Len(Dir(sPath)) = 0 Then
         MsgBox "Файл разметки отчёта не найден:" & vbCrLf & sPath, vbExclamation, PROC_NAME
