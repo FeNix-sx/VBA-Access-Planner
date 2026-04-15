@@ -73,9 +73,6 @@ Private Sub FillTableConnections()
                "VALUES ('tbExecutors', '" & defaultPath & "', 'Список исполнителей')"
 
     db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
-               "VALUES ('tbThemes', '" & defaultPath & "', 'Темы оформления')"
-
-    db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
                "VALUES ('tbTempEvents', '" & defaultPath & "', 'Временные события для генератора')"
 
     db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
@@ -91,6 +88,66 @@ Private Sub FillTableConnections()
 
 ErrorHandler:
     MsgBox "Ошибка заполнения таблицы подключений: " & Err.description, vbCritical
+End Sub
+
+'################################################################
+'########      НОРМАЛИЗАЦИЯ СПИСКА ПОДКЛЮЧАЕМЫХ ТАБЛИЦ   ########
+'################################################################
+Private Sub EnsureRequiredTableConnections(ByVal backendPath As String)
+    On Error GoTo ErrorHandler
+
+    Dim db As DAO.Database
+    Dim allowedList As String
+
+    Set db = CurrentDb
+
+    allowedList = "'tbEventInstances','tbExecutors','tbTempEvents','tbPeriodicity','tbRules','tbBirthdays'"
+
+    db.Execute "DELETE FROM tbTableConnections " & _
+               "WHERE TableName NOT IN (" & allowedList & ")", dbFailOnError
+
+    db.Execute "UPDATE tbTableConnections " & _
+               "SET TablePath = '" & Replace(backendPath, "'", "''") & "' " & _
+               "WHERE TableName IN (" & allowedList & ")", dbFailOnError
+
+    Call EnsureConnectionRow(db, "tbEventInstances", backendPath, "Основные события календаря")
+    Call EnsureConnectionRow(db, "tbExecutors", backendPath, "Список исполнителей")
+    Call EnsureConnectionRow(db, "tbTempEvents", backendPath, "Временные события для генератора")
+    Call EnsureConnectionRow(db, "tbPeriodicity", backendPath, "Типы периодичности событий")
+    Call EnsureConnectionRow(db, "tbRules", backendPath, "Правила генерации событий")
+    Call EnsureConnectionRow(db, "tbBirthdays", backendPath, "Справочник дней рождения")
+
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Ошибка нормализации tbTableConnections: " & Err.description, vbCritical
+End Sub
+
+'################################################################
+'########      ДОБАВЛЕНИЕ СТРОКИ В TBTABLECONNECTIONS    ########
+'################################################################
+Private Sub EnsureConnectionRow(ByVal db As DAO.Database, ByVal tableName As String, ByVal backendPath As String, ByVal tableDescription As String)
+    On Error GoTo ErrorHandler
+
+    Dim escPath As String
+    Dim escDescription As String
+    Dim criteria As String
+
+    escPath = Replace(backendPath, "'", "''")
+    escDescription = Replace(tableDescription, "'", "''")
+    criteria = "TableName='" & Replace(tableName, "'", "''") & "'"
+
+    If DCount("*", "tbTableConnections", criteria) = 0 Then
+        db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) VALUES (" & _
+                   "'" & Replace(tableName, "'", "''") & "', " & _
+                   "'" & escPath & "', " & _
+                   "'" & escDescription & "')", dbFailOnError
+    End If
+
+    Exit Sub
+
+ErrorHandler:
+    Err.Raise Err.Number, "EnsureConnectionRow", Err.description
 End Sub
 
 '################################################################
@@ -155,8 +212,16 @@ Public Sub ConnectAllTables()
         db.Execute "UPDATE tbTableConnections SET TablePath = '" & Replace(backendPath, "'", "''") & "'"
     End If
 
+    ' Приводим tbTableConnections к целевому набору таблиц v2.0
+    Call EnsureRequiredTableConnections(backendPath)
+
+    ' СИНХРОНИЗАЦИЯ СТРУКТУРЫ БД (v2.0)
+    ' Проверяем и создаем недостающие таблицы/поля в Backend до их привязки
+    Call SyncDatabaseSchema(backendPath)
+
     ' 5. ПОДКЛЮЧАЕМ ВСЕ ТАБЛИЦЫ
-    Set rs = db.OpenRecordset("SELECT TableName FROM tbTableConnections")
+    Set rs = db.OpenRecordset("SELECT TableName FROM tbTableConnections " & _
+                              "WHERE TableName IN ('tbEventInstances','tbExecutors','tbTempEvents','tbPeriodicity','tbRules','tbBirthdays')")
     Do While Not rs.EOF
         Call LinkTable(rs!tableName, backendPath)
         rs.MoveNext
