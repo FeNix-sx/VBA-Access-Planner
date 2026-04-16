@@ -27,6 +27,14 @@ Private Const TWIPS_FORM_BASE_WIDTH As Long = 21800
 Private Const TWIPS_FORM_HEIGHT As Long = 14000
 Private Const TWIPS_BIRTHDAYS_PANEL_EXTRA_WIDTH As Long = 3300
 
+' Состояние режима окна (оконный / полноэкранный)
+Private m_IsFullscreen As Boolean
+Private m_WindowRectCaptured As Boolean
+Private m_WindowLeft As Long
+Private m_WindowTop As Long
+Private m_WindowWidth As Long
+Private m_WindowHeight As Long
+
 '################################################################
 '########            Кнопка "Текущий месяц"              ########
 '################################################################
@@ -88,6 +96,7 @@ Private Sub Form_Load()
     Call CheckLicenseOnStartup
 
     Call AutoConnectOnStartup
+    Call NotifyTodaysBirthdaysOncePerDay
     ' Устанавливаем текущий месяц
     CurrentMonth = DateSerial(Year(Date), Month(Date), 1)
 
@@ -115,17 +124,312 @@ Private Sub Form_Load()
     ' Первичное обновление панели событий дня
     Call RefreshEventPanel
 
-'     Скрыть панель навигации (NAVIGATION PANE)
-'    DoCmd.NavigateTo "acNavigationCategoryObjectType"
-'    DoCmd.RunCommand acCmdWindowHide
-
-    ' Скрыть ленту инструментов (RIBBON)
-'    DoCmd.ShowToolbar "Ribbon", acToolbarNo
+    ' Применяем UI-режим (админ/пользователь): лента и панель навигации
+    Call ApplyAdminUiMode
 
     ' Применить размер и видимость панели дней рождения
     Call ApplyBirthdaysPanelLayout
+    Call InitializeWindowMode
+    Call ApplyWindowModeFromSetting
 
 End Sub
+
+'################################################################
+'########      Активация формы (обновление UI режима)    ########
+'################################################################
+Private Sub Form_Activate()
+    On Error GoTo ExitSub
+    Call ApplyAdminUiMode
+ExitSub:
+End Sub
+
+'################################################################
+'########      Применить UI режим админ/пользователь      ########
+'################################################################
+Public Sub ApplyAdminUiMode()
+    On Error GoTo ErrHandler
+
+    If IsAdminModeEnabled() Then
+        ' Админ-режим: ничего не скрываем
+        DoCmd.SelectObject acTable, , True
+        DoCmd.ShowToolbar "Ribbon", acToolbarYes
+        Debug.Print "[f_daily_planner] UI mode -> ADMIN (Ribbon/Navigation visible)"
+    Else
+        ' Пользовательский режим: скрываем навигацию и ленту
+        DoCmd.NavigateTo "acNavigationCategoryObjectType"
+        DoCmd.RunCommand acCmdWindowHide
+        DoCmd.ShowToolbar "Ribbon", acToolbarNo
+        Debug.Print "[f_daily_planner] UI mode -> USER (Ribbon/Navigation hidden)"
+    End If
+
+    Exit Sub
+
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][ApplyAdminUiMode] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########      Проверка: включен ли режим админа          ########
+'################################################################
+Private Function IsAdminModeEnabled() As Boolean
+    On Error GoTo PropertyMissing
+    IsAdminModeEnabled = CBool(CurrentDb.Properties("AllowByPassKey"))
+    Exit Function
+
+PropertyMissing:
+    ' Если свойство отсутствует, считаем, что админ-режим выключен.
+    IsAdminModeEnabled = False
+End Function
+
+'################################################################
+'########      Инициализация режима окна формы           ########
+'################################################################
+Private Sub InitializeWindowMode()
+    On Error GoTo ErrHandler
+
+    m_IsFullscreen = False
+    m_WindowRectCaptured = False
+
+    Call CaptureWindowRect
+    Call UpdateWindowModeButtonState
+
+ExitSub:
+    Exit Sub
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][InitializeWindowMode] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########      Переключение оконный/полноэкранный        ########
+'################################################################
+Public Sub ToggleWindowMode()
+    On Error GoTo ErrHandler
+    Dim newMode As String
+
+    If m_IsFullscreen Then
+        newMode = "windowed"
+    Else
+        newMode = "fullscreen"
+    End If
+
+    Call SaveWindowModeSetting(newMode)
+
+    Application.Run "ReopenPlannerFormGlobal", Me.Name
+    Exit Sub
+
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][ToggleWindowMode] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########       Перевод формы в полноэкранный режим      ########
+'################################################################
+Public Sub SwitchToFullscreenMode()
+    On Error GoTo ErrHandler
+
+    If Not m_WindowRectCaptured Then
+        Call CaptureWindowRect
+    End If
+
+    Call ApplyFullscreenFormSize
+
+    m_IsFullscreen = True
+    Call UpdateWindowModeButtonState
+
+ExitSub:
+    Exit Sub
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][SwitchToFullscreenMode] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########         Перевод формы в оконный режим          ########
+'################################################################
+Public Sub SwitchToWindowedMode()
+    On Error GoTo ErrHandler
+
+    DoCmd.SelectObject acForm, Me.Name, False
+    DoCmd.Restore
+
+    m_IsFullscreen = False
+
+    ' Оконный режим всегда применяем по фиксированному макету формы.
+    Call ApplyBirthdaysPanelLayout
+
+    Call UpdateWindowModeButtonState
+
+ExitSub:
+    Exit Sub
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][SwitchToWindowedMode] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########      Запомнить текущее положение окна          ########
+'################################################################
+Private Sub CaptureWindowRect()
+    On Error GoTo ErrHandler
+
+    m_WindowLeft = Me.WindowLeft
+    m_WindowTop = Me.WindowTop
+    m_WindowWidth = Abs(Me.WindowWidth)
+    m_WindowHeight = Abs(Me.WindowHeight)
+    m_WindowRectCaptured = (m_WindowWidth > 0 And m_WindowHeight > 0)
+
+ExitSub:
+    Exit Sub
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][CaptureWindowRect] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########      Обновить подпись кнопки режима             ########
+'################################################################
+Private Sub UpdateWindowModeButtonState()
+    On Error GoTo ErrHandler
+    Dim captionText As String
+
+    If m_IsFullscreen Then
+        captionText = "В оконный режим"
+    Else
+        captionText = "В полноэкранный режим"
+    End If
+
+    Call SetControlCaptionIfExists("btn_window_mode", captionText)
+
+ExitSub:
+    Exit Sub
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][UpdateWindowModeButtonState] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########      Установить Caption, если контрол есть      ########
+'################################################################
+Private Sub SetControlCaptionIfExists(ByVal controlName As String, ByVal captionText As String)
+    On Error GoTo ErrHandler
+    Me.Controls(controlName).Caption = captionText
+ExitSub:
+    Exit Sub
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][SetControlCaptionIfExists] " & Err.Number & " - " & Err.description & "; control=" & controlName
+End Sub
+
+'################################################################
+'########        Кнопка переключения режима окна          ########
+'################################################################
+Private Sub btn_window_mode_Click()
+    Call ToggleWindowMode
+End Sub
+
+'################################################################
+'########      Применить режим окна из настроек           ########
+'################################################################
+Private Sub ApplyWindowModeFromSetting()
+    On Error GoTo ErrHandler
+    Dim modeValue As String
+
+    modeValue = GetWindowModeSetting()
+    m_IsFullscreen = (LCase$(modeValue) = "fullscreen")
+
+    If m_IsFullscreen Then
+        Call ApplyFullscreenFormSize
+    Else
+        DoCmd.SelectObject acForm, Me.Name, False
+        DoCmd.Restore
+        Call ApplyBirthdaysPanelLayout
+    End If
+
+    Call UpdateWindowModeButtonState
+    Exit Sub
+
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][ApplyWindowModeFromSetting] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########      Сохранить режим окна в tbSettings          ########
+'################################################################
+Private Sub SaveWindowModeSetting(ByVal modeValue As String)
+    On Error GoTo ErrHandler
+    Dim db As DAO.Database
+    Dim sqlText As String
+
+    Set db = CurrentDb
+    db.Execute "DELETE FROM tbSettings WHERE SettingName = 'PlannerWindowMode'"
+
+    sqlText = "INSERT INTO tbSettings (SettingName, SettingValue) VALUES ('PlannerWindowMode', '" & modeValue & "')"
+    db.Execute sqlText
+    Exit Sub
+
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][SaveWindowModeSetting] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########      Загрузить режим окна из tbSettings         ########
+'################################################################
+Private Function GetWindowModeSetting() As String
+    On Error GoTo ErrHandler
+    Dim db As DAO.Database
+    Dim rs As DAO.Recordset
+
+    GetWindowModeSetting = "windowed"
+
+    Set db = CurrentDb
+    Set rs = db.OpenRecordset("SELECT SettingValue FROM tbSettings WHERE SettingName = 'PlannerWindowMode'")
+
+    If Not rs.EOF Then
+        GetWindowModeSetting = LCase$(Nz(rs!settingValue, "windowed"))
+    End If
+
+ExitFn:
+    On Error Resume Next
+    If Not rs Is Nothing Then rs.Close
+    Set rs = Nothing
+    Set db = Nothing
+    Exit Function
+
+ErrHandler:
+    Debug.Print "[f_daily_planner][ERR][GetWindowModeSetting] " & Err.Number & " - " & Err.description
+    Resume ExitFn
+End Function
+
+'################################################################
+'########      Применить полноэкранный размер формы       ########
+'################################################################
+Private Sub ApplyFullscreenFormSize()
+    On Error GoTo FallbackMaximize
+    Dim usableW As Long
+    Dim usableH As Long
+
+    DoCmd.SelectObject acForm, Me.Name, False
+    usableW = GetAccessUsableSize("UsableWidth")
+    usableH = GetAccessUsableSize("UsableHeight")
+
+    If usableW > 0 And usableH > 0 Then
+        DoCmd.MoveSize 0, 0, usableW, usableH
+    Else
+        DoCmd.Maximize
+    End If
+
+    Exit Sub
+
+FallbackMaximize:
+    On Error Resume Next
+    DoCmd.Maximize
+End Sub
+
+'################################################################
+'########      Получить UsableWidth/UsableHeight         ########
+'################################################################
+Private Function GetAccessUsableSize(ByVal propertyName As String) As Long
+    On Error GoTo ExitFn
+    GetAccessUsableSize = CLng(CallByName(Application, propertyName, VbGet))
+    Exit Function
+ExitFn:
+    GetAccessUsableSize = 0
+End Function
 
 '################################################################
 '########       Целевая дата панели событий дня          ########
@@ -424,10 +728,18 @@ Private Sub ApplyBirthdaysPanelLayout()
 
     If Nz(Me.chk_ShowBirthdays, False) Then
         Me.sub_rptBirthdays.Visible = True
-        DoCmd.MoveSize TWIPS_DAILY_PLANNER_LEFT, TWIPS_DAILY_PLANNER_TOP, TWIPS_FORM_BASE_WIDTH + TWIPS_BIRTHDAYS_PANEL_EXTRA_WIDTH, TWIPS_FORM_HEIGHT
+        If m_IsFullscreen Then
+            Call ApplyFullscreenFormSize
+        Else
+            DoCmd.MoveSize TWIPS_DAILY_PLANNER_LEFT, TWIPS_DAILY_PLANNER_TOP, TWIPS_FORM_BASE_WIDTH + TWIPS_BIRTHDAYS_PANEL_EXTRA_WIDTH, TWIPS_FORM_HEIGHT
+        End If
     Else
         Me.sub_rptBirthdays.Visible = False
-        DoCmd.MoveSize TWIPS_DAILY_PLANNER_LEFT, TWIPS_DAILY_PLANNER_TOP, TWIPS_FORM_BASE_WIDTH, TWIPS_FORM_HEIGHT
+        If m_IsFullscreen Then
+            Call ApplyFullscreenFormSize
+        Else
+            DoCmd.MoveSize TWIPS_DAILY_PLANNER_LEFT, TWIPS_DAILY_PLANNER_TOP, TWIPS_FORM_BASE_WIDTH, TWIPS_FORM_HEIGHT
+        End If
     End If
 
     On Error GoTo 0
@@ -439,11 +751,12 @@ Private Sub ApplyBirthdaysPanelLayout()
     Exit Sub
 
 BirthdaysLayoutSkip:
+    Debug.Print "[f_daily_planner][ERR][ApplyBirthdaysPanelLayout] " & Err.Number & " - " & Err.description
 End Sub
 
 '################################################################
-'########              Построение календаря             ########
-'########               Основная логика                 ########
+'########               Построение календаря             ########
+'########                Основная логика                 ########
 '################################################################
 Public Sub BuildCalendar()
     Dim startDate As Date
@@ -487,8 +800,8 @@ Public Sub BuildCalendar()
 End Sub
 
 '################################################################
-'########          1. Настройка доступности             ########
-'########               поля событий                    ########
+'########           1. Настройка доступности             ########
+'########                поля событий                    ########
 '################################################################
 Private Sub SetEventFieldAccess(ctrlEvent As Control, currentDate As Date)
     ' Для дней текущего месяца поле доступно для ввода (только для чтения)
@@ -503,8 +816,8 @@ Private Sub SetEventFieldAccess(ctrlEvent As Control, currentDate As Date)
 End Sub
 
 '################################################################
-'########          2. Применение стилей                 ########
-'########                 для дня                       ########
+'########           2. Применение стилей                 ########
+'########                  для дня                       ########
 '################################################################
 Private Sub ApplyDayStyling(ctrlDay As Control, ctrlEvent As Control, currentDate As Date)
     ' Применение стиля в зависимости от месяца и дня недели
@@ -524,8 +837,8 @@ Private Sub ApplyDayStyling(ctrlDay As Control, ctrlEvent As Control, currentDat
 End Sub
 
 '################################################################
-'########          2.1 Стиль дня                        ########
-'########             текущего месяца                   ########
+'########           2.1 Стиль дня                        ########
+'########             текущего месяца                    ########
 '################################################################
 Private Sub ApplyCurrentMonthStyle(ctrlDay As Control, ctrlEvent As Control)
     ' Label и поле - цвета текущего месяца
@@ -542,8 +855,8 @@ Private Sub ApplyCurrentMonthStyle(ctrlDay As Control, ctrlEvent As Control)
 End Sub
 
 '################################################################
-'########          2.2 Стиль дня                        ########
-'########               других месяцев                  ########
+'########           2.2 Стиль дня                        ########
+'########               других месяцев                   ########
 '################################################################
 Private Sub ApplyOtherMonthStyle(ctrlDay As Control, ctrlEvent As Control)
     ' Label и поле - цвета других месяцев
@@ -560,8 +873,8 @@ Private Sub ApplyOtherMonthStyle(ctrlDay As Control, ctrlEvent As Control)
 End Sub
 
 '################################################################
-'########          2.3 Стиль выходного дня             ########
-'########               текущего месяца                 ########
+'########            2.3 Стиль выходного дня             ########
+'########                текущего месяца                 ########
 '################################################################
 Private Sub ApplyWeekendStyle(ctrlDay As Control, ctrlEvent As Control)
     Const WEEKEND_DARKEN_FACTOR As Double = 0.9 ' 10% затемнение
@@ -580,7 +893,7 @@ Private Sub ApplyWeekendStyle(ctrlDay As Control, ctrlEvent As Control)
 End Sub
 
 '################################################################
-'########          3. Выделение сегодняшнего дня       ########
+'########           3. Выделение сегодняшнего дня        ########
 '################################################################
 Private Sub HighlightToday(ctrlDay As Control, ctrlEvent As Control, currentDate As Date)
 
@@ -599,7 +912,7 @@ Private Sub HighlightToday(ctrlDay As Control, ctrlEvent As Control, currentDate
 End Sub
 
 '################################################################
-'########          4. Загрузка данных событий           ########
+'########           4. Загрузка данных событий           ########
 '################################################################
 Private Sub LoadEventData(ctrlEvent As Control, currentDate As Date)
 
@@ -711,8 +1024,8 @@ ErrorHandler:
 
 End Sub
 '################################################################
-'########          5. Оформление                        ########
-'########             заголовка формы                   ########
+'########           5. Оформление                        ########
+'########              заголовка формы                   ########
 '################################################################
 Private Sub ApplyFormHeaderStyle()
     On Error Resume Next ' на случай если какие-то элементы отсутствуют
@@ -721,6 +1034,12 @@ Private Sub ApplyFormHeaderStyle()
     Me.Section(0).backColor = FormTheme_Back
     Me.Section(1).backColor = FormTheme_Back
     Me.Section(2).backColor = FormTheme_Back
+
+    ' Контейнеры подотчетов: применяем только поддерживаемые свойства.
+    Call SetControlColorIfSupported(Me.sub_rptEventInstances, "BorderColor", HeaderTheme_Border)
+    Call SetControlColorIfSupported(Me.sub_rptEventInstances, "BackColor", FormTheme_Back)
+    Call SetControlColorIfSupported(Me.sub_rptBirthdays, "BorderColor", HeaderTheme_Border)
+    Call SetControlColorIfSupported(Me.sub_rptBirthdays, "BackColor", FormTheme_Back)
 
     ' Заголовок месяца и года в шапке
     Me.lbl_MonthYear.ForeColor = HeaderTheme_Text
@@ -739,6 +1058,11 @@ Private Sub ApplyFormHeaderStyle()
     Me.btn_theme.backColor = HeaderTheme_Back
     Me.btn_theme.ForeColor = HeaderTheme_Text
     Me.btn_theme.borderColor = HeaderTheme_Border
+
+    ' Кнопка переключения оконного/полноэкранного режима
+    Me.btn_window_mode.backColor = HeaderTheme_Back
+    Me.btn_window_mode.ForeColor = HeaderTheme_Text
+    Me.btn_window_mode.borderColor = HeaderTheme_Border
 
     ' Кнопка "Текущий месяц"
     Me.btn_current.backColor = HeaderTheme_Back
@@ -785,11 +1109,36 @@ Private Sub ApplyFormHeaderStyle()
         Me.Controls("lbl_weekday_" & i).backColor = HeaderTheme_Back
         Me.Controls("lbl_weekday_" & i).ForeColor = HeaderTheme_Text
     Next i
+
+    ' Альтернативные имена заголовков дней недели (текущий макет формы)
+    Me.lbl_Monday.backColor = HeaderTheme_Back
+    Me.lbl_Monday.ForeColor = HeaderTheme_Text
+    Me.lbl_Tuesday.backColor = HeaderTheme_Back
+    Me.lbl_Tuesday.ForeColor = HeaderTheme_Text
+    Me.lbl_Wednesday.backColor = HeaderTheme_Back
+    Me.lbl_Wednesday.ForeColor = HeaderTheme_Text
+    Me.lbl_Thursday.backColor = HeaderTheme_Back
+    Me.lbl_Thursday.ForeColor = HeaderTheme_Text
+    Me.lbl_Friday.backColor = HeaderTheme_Back
+    Me.lbl_Friday.ForeColor = HeaderTheme_Text
+    Me.lbl_Saturday.backColor = HeaderTheme_Back
+    Me.lbl_Saturday.ForeColor = HeaderTheme_Text
+    Me.lbl_Sunday.backColor = HeaderTheme_Back
+    Me.lbl_Sunday.ForeColor = HeaderTheme_Text
 End Sub
 
 '################################################################
-'########          6. Применение темы                   ########
-'########             на все элементы                   ########
+'########   Безопасная установка цвета для контрола      ########
+'################################################################
+Private Sub SetControlColorIfSupported(ByVal targetControl As Object, ByVal propertyName As String, ByVal colorValue As Long)
+    On Error GoTo ExitSub
+    CallByName targetControl, propertyName, VbLet, colorValue
+ExitSub:
+End Sub
+
+'################################################################
+'########           6. Применение темы                   ########
+'########              на все элементы                   ########
 '################################################################
 Public Sub ApplyTheme(ThemeName As String, Optional showMessage As Boolean = False)
     On Error GoTo ErrorHandler
@@ -862,8 +1211,8 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########          7. Загрузка темы                     ########
-'########                 по умолчанию                  ########
+'########           7. Загрузка темы                     ########
+'########                  по умолчанию                  ########
 '################################################################
 Private Sub LoadDefaultTheme()
     On Error GoTo ErrorHandler
@@ -932,12 +1281,12 @@ Private Sub ApplyEventStatusFormatting(ctrlEvent As Control, allCompleted As Boo
 End Sub
 
 '################################################################
-'########          8. Навигация                        ########
-'########               между месяцами                  ########
+'########            8. Навигация                        ########
+'########                между месяцами                  ########
 '################################################################
 
 '################################################################
-'########          Кнопка "Следующий месяц"             ########
+'########           Кнопка "Следующий месяц"             ########
 '################################################################
 Private Sub btn_next_Click()
     CurrentMonth = DateAdd("m", 1, CurrentMonth)
@@ -945,7 +1294,7 @@ Private Sub btn_next_Click()
 End Sub
 
 '################################################################
-'########          Кнопка "Предыдущий месяц"            ########
+'########           Кнопка "Предыдущий месяц"            ########
 '################################################################
 Private Sub btn_previous_Click()
     CurrentMonth = DateAdd("m", -1, CurrentMonth)
@@ -953,7 +1302,7 @@ Private Sub btn_previous_Click()
 End Sub
 
 '################################################################
-'########          Кнопка "Выбор темы"                  ########
+'########           Кнопка "Выбор темы"                  ########
 '################################################################
 Private Sub btn_theme_Click()
     ' Открытие формы выбора темы и ожидание выбора
@@ -1092,8 +1441,8 @@ Private Sub fld_day_42_Click()
 End Sub
 
 '################################################################
-'########          Обработчики двойного клика           ########
-'########              для всех 42 дней                 ########
+'########           Обработчики двойного клика           ########
+'########               для всех 42 дней                 ########
 '################################################################
 
 Private Sub fld_day_1_DblClick(Cancel As Integer)
@@ -1294,7 +1643,7 @@ Private Sub chk_CurrentDay_AfterUpdate()
 End Sub
 
 '################################################################
-'########         Сохранение настройки фильтра          ########
+'########          Сохранение настройки фильтра          ########
 '################################################################
 Private Sub SaveHideCompletedSetting()
     On Error GoTo ErrorHandler
@@ -1310,7 +1659,7 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########    Открытие формы дня по клику               ########
+'########      Открытие формы дня по клику               ########
 '################################################################
 Private Function ResolveCalendarDateByControlName(ByVal controlName As String) As Date
     Dim DayNumber As Integer
@@ -1322,7 +1671,7 @@ Private Function ResolveCalendarDateByControlName(ByVal controlName As String) A
 End Function
 
 '################################################################
-'########    Выбор дня календаря для панели             ########
+'########     Выбор дня календаря для панели             ########
 '################################################################
 Private Sub SelectDayForPanelByControl(ByVal controlName As String)
     On Error GoTo ExitSub
@@ -1347,7 +1696,7 @@ ExitSub:
 End Sub
 
 '################################################################
-'########            Вспомогательный debug-log            ########
+'########            Вспомогательный debug-log           ########
 '################################################################
 Private Function EscapeJson(ByVal value As String) As String
     value = Replace(value, "\", "\\")
@@ -1392,7 +1741,7 @@ GiveUp:
 End Sub
 
 '################################################################
-'########    Открытие формы дня по клику               ########
+'########      Открытие формы дня по клику               ########
 '################################################################
 Private Sub OpenDayEventsByControl(controlName As String)
     On Error GoTo ErrorHandler
@@ -1424,7 +1773,7 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########          Проверка выходного дня               ########
+'########           Проверка выходного дня               ########
 '################################################################
 Private Function IsWeekend(checkDate As Date) As Boolean
     Dim dayOfWeek As Integer
@@ -1433,7 +1782,7 @@ Private Function IsWeekend(checkDate As Date) As Boolean
 End Function
 
 '################################################################
-'########          Затемнение цвета                    ########
+'########            Затемнение цвета                    ########
 '################################################################
 Private Function DarkenColor(originalColor As Long, factor As Double) As Long
     Dim r As Integer, g As Integer, b As Integer
@@ -1449,7 +1798,7 @@ Private Function DarkenColor(originalColor As Long, factor As Double) As Long
 End Function
 
 '################################################################
-'########      Инициализация фильтра исполнителей       ########
+'########       Инициализация фильтра исполнителей       ########
 '################################################################
 Public Sub InitializeExecutorFilter()
     On Error GoTo ErrorHandler
@@ -1485,7 +1834,7 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########    Сохранение выбранного исполнителя         ########
+'########      Сохранение выбранного исполнителя         ########
 '################################################################
 Private Sub SaveExecutorSetting()
     On Error GoTo ErrorHandler
@@ -1513,7 +1862,7 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########    Применение фильтра исполнителя           ########
+'########       Применение фильтра исполнителя           ########
 '################################################################
 Private Sub cboExecutorFilter_AfterUpdate()
     On Error GoTo ErrorHandler
@@ -1534,7 +1883,7 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########            Кнопка выхода из БД                ########
+'########            Кнопка выхода из БД                 ########
 '################################################################
 Private Sub cmdCloseDataBase_Click()
     On Error GoTo ErrorHandler
@@ -1549,7 +1898,7 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########             Кнопка "Поиск событий"            ########
+'########             Кнопка "Поиск событий"             ########
 '################################################################
 Private Sub cmdSearchEvents_Click()
     On Error GoTo ErrorHandler
@@ -1564,7 +1913,7 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########          Публичные методы для демо-режима     ########
+'########          Публичные методы для демо-режима      ########
 '################################################################
 
 Public Sub GoToNextMonth()
@@ -1590,5 +1939,3 @@ End Sub
 Public Sub ApplyHideCompletedFilter()
     Call chkHideCompleted_AfterUpdate
 End Sub
-
-

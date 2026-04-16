@@ -309,6 +309,91 @@ Public Sub EnsureBirthdaysPanelQueryAndReport()
 End Sub
 
 '################################################################
+'########    УВЕДОМЛЕНИЕ О ДР ПРИ ПЕРВОМ ЗАПУСКЕ ДНЯ     ########
+'################################################################
+Public Sub NotifyTodaysBirthdaysOncePerDay()
+' Назначение: Один раз в сутки показать уведомление о сегодняшних днях рождения.
+' Принцип:    Проверяет ключ BirthdaysNotifyDate в tbSettings; если на сегодня не
+'             показывали, собирает именинников за сегодня и выводит MsgBox.
+'             Для каждой записи 2 строки: ФИО+возраст и примечание.
+'################################################################
+    Const PROC_NAME As String = "NotifyTodaysBirthdaysOncePerDay"
+    Const SETTING_NAME As String = "BirthdaysNotifyDate"
+
+    On Error GoTo Err_Handler
+
+    Dim db As DAO.Database
+    Dim rs As DAO.Recordset
+    Dim todayKey As String
+    Dim savedKey As String
+    Dim strSQL As String
+    Dim msgText As String
+    Dim fullName As String
+    Dim ageText As String
+    Dim noteText As String
+
+    Set db = CurrentDb
+    todayKey = Format(DateValue(Date), "yyyy-mm-dd")
+    savedKey = ""
+
+    Set rs = db.OpenRecordset("SELECT SettingValue FROM tbSettings WHERE SettingName = '" & SETTING_NAME & "'", dbOpenSnapshot)
+    If Not rs.EOF Then
+        savedKey = Nz(rs!SettingValue, "")
+    End If
+    rs.Close
+    Set rs = Nothing
+
+    If savedKey = todayKey Then GoTo Exit_Procedure
+
+    strSQL = "SELECT Trim([LastName] & ' ' & [FirstName] & IIf(Len(Nz([MiddleName],''))=0,'',' ' & [MiddleName])) AS FullName, " & _
+             "BirthdayAgeText([BirthDate], BirthdayOccurrenceInWindow([BirthDate])) AS AgeText, " & _
+             "Notes " & _
+             "FROM tbBirthdays " & _
+             "WHERE BirthdayOccurrenceInWindow([BirthDate]) = Date() " & _
+             "ORDER BY [LastName], [FirstName], [MiddleName];"
+
+    Set rs = db.OpenRecordset(strSQL, dbOpenSnapshot)
+    If rs.EOF Then
+        rs.Close
+        Set rs = Nothing
+        GoTo Exit_Procedure
+    End If
+
+    msgText = "Сегодня дни рождения:" & vbCrLf & String(28, "-") & vbCrLf & vbCrLf
+
+    Do While Not rs.EOF
+        fullName = Trim(Nz(rs!FullName, ""))
+        ageText = Trim(Nz(rs!AgeText, ""))
+        noteText = Trim(Nz(rs!Notes, ""))
+        If Len(noteText) = 0 Then noteText = "—"
+
+        msgText = msgText & fullName & " — " & ageText & vbCrLf & _
+                  "Примечание: " & noteText & vbCrLf & vbCrLf
+        rs.MoveNext
+    Loop
+
+    rs.Close
+    Set rs = Nothing
+
+    MsgBox msgText, vbInformation, "Напоминание о днях рождения"
+
+    db.Execute "DELETE FROM tbSettings WHERE SettingName = '" & SETTING_NAME & "'", dbFailOnError
+    db.Execute "INSERT INTO tbSettings (SettingName, SettingValue) VALUES ('" & SETTING_NAME & "', '" & todayKey & "')", dbFailOnError
+
+Exit_Procedure:
+    Set rs = Nothing
+    Set db = Nothing
+    Exit Sub
+
+Err_Handler:
+    Debug.Print "=== Ошибка в процедуре: " & PROC_NAME & " ==="
+    Debug.Print "  Описание: " & Err.description
+    Debug.Print "  Номер: " & Err.Number
+    Debug.Print String(60, "-")
+    Resume Exit_Procedure
+End Sub
+
+'################################################################
 '########     ДЕМО-ЗАПИСИ В tbBirthdays ДЛЯ ПРОВЕРКИ       ########
 '################################################################
 Public Sub SeedBirthdaysTestData()
@@ -456,7 +541,3 @@ Public Sub RefreshBirthdaysUIAfterEdit()
     End If
     On Error GoTo 0
 End Sub
-
-
-
-
