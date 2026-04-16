@@ -19,6 +19,10 @@ Dim HeaderTheme_Text As Long
 Dim HeaderTheme_Back As Long
 Dim HeaderTheme_Border As Long
 Dim FormTheme_Back As Long
+Private Const GAMES_SETTING_COUNT As String = "games_click_count"
+Private Const GAMES_SETTING_CAPTION As String = "games_button_caption"
+Private Const GAMES_SETTING_LAST_MESSAGE_KEY As String = "games_last_message_key"
+Private Const GAMES_RANDOM_POOL_SIZE As Long = 20
 
 ' Константы позиции окна и размеров формы «Дни рождения» (twips)
 Private Const TWIPS_DAILY_PLANNER_LEFT As Long = 500
@@ -80,14 +84,14 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########            Кнопка демо-версии                 ########
+'########             Кнопка демо-версии                 ########
 '################################################################
 Private Sub cmdRunDemo_Click()
     DoCmd.OpenForm "frmDemo"
 End Sub
 
 '################################################################
-'########          События формы при загрузке           ########
+'########           События формы при загрузке           ########
 '################################################################
 
 Private Sub Form_Load()
@@ -131,6 +135,7 @@ Private Sub Form_Load()
     Call ApplyBirthdaysPanelLayout
     Call InitializeWindowMode
     Call ApplyWindowModeFromSetting
+    Call InitializeGamesButtonState
 
 End Sub
 
@@ -151,11 +156,13 @@ Public Sub ApplyAdminUiMode()
 
     If IsAdminModeEnabled() Then
         ' Админ-режим: ничего не скрываем
+        Call SetAccessSpecialKeysEnabled(True)
         DoCmd.SelectObject acTable, , True
         DoCmd.ShowToolbar "Ribbon", acToolbarYes
         Debug.Print "[f_daily_planner] UI mode -> ADMIN (Ribbon/Navigation visible)"
     Else
         ' Пользовательский режим: скрываем навигацию и ленту
+        Call SetAccessSpecialKeysEnabled(False)
         DoCmd.NavigateTo "acNavigationCategoryObjectType"
         DoCmd.RunCommand acCmdWindowHide
         DoCmd.ShowToolbar "Ribbon", acToolbarNo
@@ -166,6 +173,27 @@ Public Sub ApplyAdminUiMode()
 
 ErrHandler:
     Debug.Print "[f_daily_planner][ERR][ApplyAdminUiMode] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########      Разрешить/запретить спецклавиши Access    ########
+'################################################################
+Private Sub SetAccessSpecialKeysEnabled(ByVal isEnabled As Boolean)
+    On Error GoTo PropertyMissing
+    CurrentDb.Properties("AllowSpecialKeys") = isEnabled
+    Exit Sub
+
+PropertyMissing:
+    If Err.Number = 3270 Then
+        Dim db As DAO.Database
+        Dim prop As DAO.Property
+
+        Set db = CurrentDb
+        Set prop = db.CreateProperty("AllowSpecialKeys", dbBoolean, isEnabled)
+        db.Properties.Append prop
+    Else
+        Debug.Print "[f_daily_planner][ERR][SetAccessSpecialKeysEnabled] " & Err.Number & " - " & Err.description
+    End If
 End Sub
 
 '################################################################
@@ -323,6 +351,39 @@ Private Sub btn_window_mode_Click()
 End Sub
 
 '################################################################
+'########               Кнопка "Игры"                    ########
+'################################################################
+Private Sub btn_games_Click()
+    On Error GoTo Err_Handler
+    Dim clickCount As Long
+    Dim nextCount As Long
+    Dim lastMessageKey As Long
+    Dim newMessageKey As Long
+    Dim titleText As String
+    Dim captionText As String
+    Dim messageText As String
+
+    clickCount = GetGamesClickCount()
+    nextCount = (clickCount + 1) Mod 100
+    titleText = GetGamesTitleByCount(nextCount)
+    captionText = BuildGamesCaption(titleText, nextCount)
+
+    lastMessageKey = CLng(Val(Nz(GetPlannerSettingValue(GAMES_SETTING_LAST_MESSAGE_KEY, "0"), "0")))
+    messageText = BuildGamesMessage(nextCount, titleText, lastMessageKey, newMessageKey)
+
+    Call SavePlannerSettingValue(GAMES_SETTING_COUNT, CStr(nextCount))
+    Call SavePlannerSettingValue(GAMES_SETTING_CAPTION, captionText)
+    Call SavePlannerSettingValue(GAMES_SETTING_LAST_MESSAGE_KEY, CStr(newMessageKey))
+
+    Me.btn_games.Caption = captionText
+    MsgBox messageText, vbInformation, "Игры"
+    Exit Sub
+
+Err_Handler:
+    MsgBox "Ошибка в кнопке «Игры»: " & Err.Description, vbExclamation
+End Sub
+
+'################################################################
 '########      Применить режим окна из настроек           ########
 '################################################################
 Private Sub ApplyWindowModeFromSetting()
@@ -345,6 +406,263 @@ Private Sub ApplyWindowModeFromSetting()
 
 ErrHandler:
     Debug.Print "[f_daily_planner][ERR][ApplyWindowModeFromSetting] " & Err.Number & " - " & Err.description
+End Sub
+
+'################################################################
+'########      Инициализация состояния кнопки "Игры"     ########
+'################################################################
+Private Sub InitializeGamesButtonState()
+    On Error GoTo Err_Handler
+    Dim clickCount As Long
+    Dim titleText As String
+    Dim captionText As String
+
+    Randomize
+    clickCount = GetGamesClickCount()
+    titleText = GetGamesTitleByCount(clickCount)
+    captionText = BuildGamesCaption(titleText, clickCount)
+
+    Me.btn_games.Caption = captionText
+    Call SavePlannerSettingValue(GAMES_SETTING_CAPTION, captionText)
+    Exit Sub
+
+Err_Handler:
+    Debug.Print "[f_daily_planner][ERR][InitializeGamesButtonState] " & Err.Number & " - " & Err.Description
+End Sub
+
+'################################################################
+'########       Получить счетчик кнопки "Игры"           ########
+'################################################################
+Private Function GetGamesClickCount() As Long
+    On Error GoTo Err_Handler
+    Dim rawValue As String
+    Dim parsedValue As Long
+
+    rawValue = GetPlannerSettingValue(GAMES_SETTING_COUNT, "0")
+    parsedValue = CLng(Val(Nz(rawValue, "0")))
+
+    If parsedValue < 0 Or parsedValue > 99 Then
+        parsedValue = 0
+    End If
+
+    GetGamesClickCount = parsedValue
+    Exit Function
+
+Err_Handler:
+    GetGamesClickCount = 0
+End Function
+
+'################################################################
+'########        Определить титул кнопки "Игры"          ########
+'################################################################
+Private Function GetGamesTitleByCount(ByVal clickCount As Long) As String
+    Select Case clickCount
+        Case 0 To 9
+            GetGamesTitleByCount = "Игры"
+        Case 10 To 19
+            GetGamesTitleByCount = "Разминатор"
+        Case 20 To 29
+            GetGamesTitleByCount = "Уверенный нажиматор"
+        Case 30 To 39
+            GetGamesTitleByCount = "Серийный нажиматор"
+        Case 40 To 49
+            GetGamesTitleByCount = "Мастер-нажиматор"
+        Case 50 To 59
+            GetGamesTitleByCount = "ЛКМ III степени"
+        Case 60 To 69
+            GetGamesTitleByCount = "ЛКМ II степени"
+        Case 70 To 79
+            GetGamesTitleByCount = "ЛКМ I степени"
+        Case 80 To 89
+            GetGamesTitleByCount = "Ветеран кликов"
+        Case Else
+            GetGamesTitleByCount = "Заслуженный НАЖИМАТОР"
+    End Select
+End Function
+
+'################################################################
+'########      Сформировать caption кнопки "Игры"        ########
+'################################################################
+Private Function BuildGamesCaption(ByVal titleText As String, ByVal clickCount As Long) As String
+    If clickCount <= 0 Then
+        BuildGamesCaption = titleText
+    Else
+        BuildGamesCaption = titleText & " (" & CStr(clickCount) & ")"
+    End If
+End Function
+
+'################################################################
+'########          Построить сообщение кнопки            ########
+'################################################################
+Private Function BuildGamesMessage(ByVal clickCount As Long, ByVal titleText As String, ByVal lastMessageKey As Long, ByRef newMessageKey As Long) As String
+    Dim bodyText As String
+
+    bodyText = GetGamesFixedMessage(clickCount)
+    If Len(bodyText) > 0 Then
+        newMessageKey = 0
+        BuildGamesMessage = bodyText
+        Exit Function
+    End If
+
+    If IsGamesSpecialCount(clickCount) Then
+        newMessageKey = 0
+        BuildGamesMessage = "Присвоен титул «" & titleText & "» !!!" & vbCrLf & GetGamesSpecialBody(clickCount)
+        Exit Function
+    End If
+
+    newMessageKey = GetRandomMessageKeyExcluding(lastMessageKey)
+    BuildGamesMessage = GetGamesRandomMessageByKey(newMessageKey)
+End Function
+
+'################################################################
+'########       Фиксированные сообщения 1..9             ########
+'################################################################
+Private Function GetGamesFixedMessage(ByVal clickCount As Long) As String
+    Select Case clickCount
+        Case 1: GetGamesFixedMessage = "Первый клик принят. Официально: разминаемся."
+        Case 2: GetGamesFixedMessage = "Второй клик. Рабочий настрой сделал шаг назад."
+        Case 3: GetGamesFixedMessage = "Третий клик. Вы действуете уверенно и с огоньком."
+        Case 4: GetGamesFixedMessage = "Четвертый клик. Планер сделал вид, что ничего не заметил."
+        Case 5: GetGamesFixedMessage = "Пятый клик. Пауза оформлена по всем правилам."
+        Case 6: GetGamesFixedMessage = "Шестой клик. Концентрация ушла за кофе."
+        Case 7: GetGamesFixedMessage = "Седьмой клик. Режим ""еще чуть-чуть"" активирован."
+        Case 8: GetGamesFixedMessage = "Восьмой клик. Кнопка уже узнает ваш почерк."
+        Case 9: GetGamesFixedMessage = "Девятый клик. На горизонте юбилейное нажатие."
+        Case Else
+            GetGamesFixedMessage = vbNullString
+    End Select
+End Function
+
+'################################################################
+'########          Проверка специальных чисел            ########
+'################################################################
+Private Function IsGamesSpecialCount(ByVal clickCount As Long) As Boolean
+    Select Case clickCount
+        Case 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 99
+            IsGamesSpecialCount = True
+        Case Else
+            IsGamesSpecialCount = False
+    End Select
+End Function
+
+'################################################################
+'########         Спец-тексты для юбилейных точек        ########
+'################################################################
+Private Function GetGamesSpecialBody(ByVal clickCount As Long) As String
+    Select Case clickCount
+        Case 10
+            GetGamesSpecialBody = "10 нажатий! Первый юбилей достигнут, это заявка на стиль."
+        Case 15
+            GetGamesSpecialBody = "15 нажатий! Полуторадесяток отвлечения выполнен образцово."
+        Case 20
+            GetGamesSpecialBody = "20 нажатий! Уверенный нажиматор официально на посту."
+        Case 30
+            GetGamesSpecialBody = "30 нажатий! Серийный режим работает без сбоев."
+        Case 40
+            GetGamesSpecialBody = "40 нажатий! Мастер-нажиматор набирает обороты."
+        Case 50
+            GetGamesSpecialBody = "50 нажатий! ЛКМ III степени присвоена."
+        Case 60
+            GetGamesSpecialBody = "60 нажатий! ЛКМ II степени получена уверенно."
+        Case 70
+            GetGamesSpecialBody = "70 нажатий! ЛКМ I степени — уже почти легенда."
+        Case 80
+            GetGamesSpecialBody = "80 нажатий! Ветеран кликов в прекрасной форме."
+        Case 90
+            GetGamesSpecialBody = "90 нажатий! До заслуженного титула совсем немного."
+        Case 99
+            GetGamesSpecialBody = "Финальная отметка взята! Вы в ЭЛИТЕ НАЖИМАТОРОВ. Передайте разработчику, что система проверена на максимум."
+        Case Else
+            GetGamesSpecialBody = "Юбилейный клик принят."
+    End Select
+End Function
+
+'################################################################
+'########   Случайный ключ сообщения без повтора подряд   ########
+'################################################################
+Private Function GetRandomMessageKeyExcluding(ByVal lastMessageKey As Long) As Long
+    Dim nextKey As Long
+
+    If GAMES_RANDOM_POOL_SIZE <= 1 Then
+        GetRandomMessageKeyExcluding = 1
+        Exit Function
+    End If
+
+    Do
+        nextKey = Int(GAMES_RANDOM_POOL_SIZE * Rnd) + 1
+    Loop While nextKey = lastMessageKey
+
+    GetRandomMessageKeyExcluding = nextKey
+End Function
+
+'################################################################
+'########        Случайные сообщения для пула            ########
+'################################################################
+Private Function GetGamesRandomMessageByKey(ByVal messageKey As Long) As String
+    Select Case messageKey
+        Case 1: GetGamesRandomMessageByKey = "Клик засчитан. Список задач слегка напрягся, но держится."
+        Case 2: GetGamesRandomMessageByKey = "Нажатие принято. План работ сделал глубокий вдох."
+        Case 3: GetGamesRandomMessageByKey = "Еще один клик — и перерыв официально считается полезным."
+        Case 4: GetGamesRandomMessageByKey = "Кнопка одобряет ваш стиль микропауз."
+        Case 5: GetGamesRandomMessageByKey = "Рабочий ритм на минуту уступил место хорошему настроению."
+        Case 6: GetGamesRandomMessageByKey = "Планер молчит, но статистика помнит все."
+        Case 7: GetGamesRandomMessageByKey = "Совесть получила уведомление: ""Вернусь через секундочку""."
+        Case 8: GetGamesRandomMessageByKey = "Красиво нажато. Даже слишком красиво."
+        Case 9: GetGamesRandomMessageByKey = "Это был уверенный клик человека с опытом."
+        Case 10: GetGamesRandomMessageByKey = "Кнопка на месте, чувство юмора тоже."
+        Case 11: GetGamesRandomMessageByKey = "Небольшое отвлечение выполнено без потери качества."
+        Case 12: GetGamesRandomMessageByKey = "Пауза принята. Возврат к делам рекомендован, но не навязывается."
+        Case 13: GetGamesRandomMessageByKey = "Планер прикинулся невозмутимым и пропустил нажатие."
+        Case 14: GetGamesRandomMessageByKey = "Календарь серьезен, а кнопка — в отличном настроении."
+        Case 15: GetGamesRandomMessageByKey = "Вы нажимаете так, будто это отдельный вид спорта."
+        Case 16: GetGamesRandomMessageByKey = "Отмечено: еще один стратегический клик."
+        Case 17: GetGamesRandomMessageByKey = "Задачи подождут минуту. Возможно, две."
+        Case 18: GetGamesRandomMessageByKey = "Кнопка в тонусе. Рабочий настрой догоняет."
+        Case 19: GetGamesRandomMessageByKey = "Статистика пополнилась. Настроение тоже."
+        Case 20: GetGamesRandomMessageByKey = "Отличный клик: коротко, точно, с душой."
+        Case Else
+            GetGamesRandomMessageByKey = "Нажатие принято."
+    End Select
+End Function
+
+'################################################################
+'########       Получить значение настройки по имени      ########
+'################################################################
+Private Function GetPlannerSettingValue(ByVal settingName As String, Optional ByVal defaultValue As String = "") As String
+    On Error GoTo ExitFn
+    Dim rs As DAO.Recordset
+
+    Set rs = CurrentDb.OpenRecordset("SELECT SettingValue FROM tbSettings WHERE SettingName = '" & Replace(settingName, "'", "''") & "'")
+
+    If Not rs.EOF Then
+        GetPlannerSettingValue = Nz(rs!settingValue, defaultValue)
+    Else
+        GetPlannerSettingValue = defaultValue
+    End If
+
+ExitFn:
+    On Error Resume Next
+    If Not rs Is Nothing Then rs.Close
+    Set rs = Nothing
+End Function
+
+'################################################################
+'########       Сохранить значение настройки по имени     ########
+'################################################################
+Private Sub SavePlannerSettingValue(ByVal settingName As String, ByVal settingValue As String)
+    On Error GoTo Err_Handler
+    Dim safeName As String
+    Dim safeValue As String
+
+    safeName = Replace(settingName, "'", "''")
+    safeValue = Replace(settingValue, "'", "''")
+
+    CurrentDb.Execute "DELETE FROM tbSettings WHERE SettingName = '" & safeName & "'"
+    CurrentDb.Execute "INSERT INTO tbSettings (SettingName, SettingValue) VALUES ('" & safeName & "', '" & safeValue & "')"
+    Exit Sub
+
+Err_Handler:
+    Debug.Print "[f_daily_planner][ERR][SavePlannerSettingValue] " & Err.Number & " - " & Err.Description & "; setting=" & settingName
 End Sub
 
 '################################################################
@@ -1083,6 +1401,11 @@ Private Sub ApplyFormHeaderStyle()
     Me.cmdSearchEvents.backColor = HeaderTheme_Back
     Me.cmdSearchEvents.ForeColor = HeaderTheme_Text
     Me.cmdSearchEvents.borderColor = HeaderTheme_Border
+
+    ' Кнопка игр
+    Me.btn_games.backColor = HeaderTheme_Back
+    Me.btn_games.ForeColor = HeaderTheme_Text
+    Me.btn_games.borderColor = HeaderTheme_Border
 
     ' Кнопка демо-режима - скрыта в релизе
     Me.cmdRunDemo.backColor = HeaderTheme_Back
