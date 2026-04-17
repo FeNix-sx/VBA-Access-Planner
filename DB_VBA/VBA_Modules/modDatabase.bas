@@ -851,14 +851,9 @@ End Sub
 ' Если открыт только BE (в проекте нет локальной tbTableConnections), используется CurrentDb.
 
 Private Function DbHasTable(ByRef db As Database, ByVal tableName As String) As Boolean
-    Dim tdf As TableDef
-    DbHasTable = False
-    For Each tdf In db.TableDefs
-        If tdf.Name = tableName Then
-            DbHasTable = True
-            Exit Function
-        End If
-    Next tdf
+    ' Каноническая проверка существования таблицы вынесена в modSchemaSync.DbHasTable.
+    ' Здесь оставлен совместимый wrapper без изменения контракта вызовов.
+    DbHasTable = modSchemaSync.DbHasTable(db, tableName)
 End Function
 
 ' Возвращает True и outDb: либо открытый файл backend (outNeedClose=True), либо CurrentDb при работе из BE.
