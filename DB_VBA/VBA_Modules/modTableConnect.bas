@@ -52,10 +52,39 @@ End Sub
 '################################################################
 '########          ЗАПОЛНЕНИЕ ТАБЛИЦЫ ПОДКЛЮЧЕНИЙ        ########
 '################################################################
+Private Function GetManagedTables() As Variant
+    GetManagedTables = Array( _
+        Array("tbEventInstances", "Основные события календаря"), _
+        Array("tbExecutors", "Список исполнителей"), _
+        Array("tbTempEvents", "Временные события для генератора"), _
+        Array("tbPeriodicity", "Типы периодичности событий"), _
+        Array("tbRules", "Правила генерации событий"), _
+        Array("tbBirthdays", "Справочник дней рождения") _
+    )
+End Function
+
+Private Function BuildManagedTablesInList() As String
+    Dim managedTables As Variant
+    Dim i As Long
+    Dim inList As String
+
+    managedTables = GetManagedTables()
+    For i = LBound(managedTables) To UBound(managedTables)
+        If Len(inList) > 0 Then
+            inList = inList & ","
+        End If
+        inList = inList & "'" & managedTables(i)(0) & "'"
+    Next i
+
+    BuildManagedTablesInList = inList
+End Function
+
 Private Sub FillTableConnections()
     On Error GoTo ErrorHandler
 
     Dim db As DAO.Database
+    Dim managedTables As Variant
+    Dim i As Long
     Set db = CurrentDb
 
     ' ПУТЬ ПО УМОЛЧАНИЮ К BACKEND
@@ -66,23 +95,11 @@ Private Sub FillTableConnections()
     db.Execute "DELETE FROM tbTableConnections"
 
     ' ДОБАВЛЯЕМ ВСЕ ТАБЛИЦЫ С ПУТЕМ ПО УМОЛЧАНИЮ
-    db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
-               "VALUES ('tbEventInstances', '" & defaultPath & "', 'Основные события календаря')"
-
-    db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
-               "VALUES ('tbExecutors', '" & defaultPath & "', 'Список исполнителей')"
-
-    db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
-               "VALUES ('tbTempEvents', '" & defaultPath & "', 'Временные события для генератора')"
-
-    db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
-               "VALUES ('tbPeriodicity', '" & defaultPath & "', 'Типы периодичности событий')"
-
-    db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
-               "VALUES ('tbRules', '" & defaultPath & "', 'Правила генерации событий')"
-
-    db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
-               "VALUES ('tbBirthdays', '" & defaultPath & "', 'Справочник дней рождения')"
+    managedTables = GetManagedTables()
+    For i = LBound(managedTables) To UBound(managedTables)
+        db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
+                   "VALUES ('" & managedTables(i)(0) & "', '" & defaultPath & "', '" & managedTables(i)(1) & "')"
+    Next i
 
     Exit Sub
 
@@ -97,11 +114,13 @@ Private Sub EnsureRequiredTableConnections(ByVal backendPath As String)
     On Error GoTo ErrorHandler
 
     Dim db As DAO.Database
+    Dim managedTables As Variant
+    Dim i As Long
     Dim allowedList As String
 
     Set db = CurrentDb
 
-    allowedList = "'tbEventInstances','tbExecutors','tbTempEvents','tbPeriodicity','tbRules','tbBirthdays'"
+    allowedList = BuildManagedTablesInList()
 
     db.Execute "DELETE FROM tbTableConnections " & _
                "WHERE TableName NOT IN (" & allowedList & ")", dbFailOnError
@@ -110,12 +129,10 @@ Private Sub EnsureRequiredTableConnections(ByVal backendPath As String)
                "SET TablePath = '" & Replace(backendPath, "'", "''") & "' " & _
                "WHERE TableName IN (" & allowedList & ")", dbFailOnError
 
-    Call EnsureConnectionRow(db, "tbEventInstances", backendPath, "Основные события календаря")
-    Call EnsureConnectionRow(db, "tbExecutors", backendPath, "Список исполнителей")
-    Call EnsureConnectionRow(db, "tbTempEvents", backendPath, "Временные события для генератора")
-    Call EnsureConnectionRow(db, "tbPeriodicity", backendPath, "Типы периодичности событий")
-    Call EnsureConnectionRow(db, "tbRules", backendPath, "Правила генерации событий")
-    Call EnsureConnectionRow(db, "tbBirthdays", backendPath, "Справочник дней рождения")
+    managedTables = GetManagedTables()
+    For i = LBound(managedTables) To UBound(managedTables)
+        Call EnsureConnectionRow(db, managedTables(i)(0), backendPath, managedTables(i)(1))
+    Next i
 
     Exit Sub
 
@@ -186,6 +203,7 @@ Public Sub ConnectAllTables()
     Dim db As DAO.Database
     Dim rs As DAO.Recordset
     Dim backendPath As String
+    Dim allowedList As String
 
     Set db = CurrentDb
 
@@ -220,8 +238,9 @@ Public Sub ConnectAllTables()
     Call SyncDatabaseSchema(backendPath)
 
     ' 5. ПОДКЛЮЧАЕМ ВСЕ ТАБЛИЦЫ
+    allowedList = BuildManagedTablesInList()
     Set rs = db.OpenRecordset("SELECT TableName FROM tbTableConnections " & _
-                              "WHERE TableName IN ('tbEventInstances','tbExecutors','tbTempEvents','tbPeriodicity','tbRules','tbBirthdays')")
+                              "WHERE TableName IN (" & allowedList & ")")
     Do While Not rs.EOF
         Call LinkTable(rs!tableName, backendPath)
         rs.MoveNext
