@@ -92,13 +92,13 @@ Private Sub FillTableConnections()
     defaultPath = CurrentProject.path & "\BE\Planner_BE.accdb"
 
     ' ОЧИЩАЕМ ТАБЛИЦУ
-    db.Execute "DELETE FROM tbTableConnections"
+    db.Execute "DELETE FROM tbTableConnections", dbFailOnError
 
     ' ДОБАВЛЯЕМ ВСЕ ТАБЛИЦЫ С ПУТЕМ ПО УМОЛЧАНИЮ
     managedTables = GetManagedTables()
     For i = LBound(managedTables) To UBound(managedTables)
         db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) " & _
-                   "VALUES ('" & managedTables(i)(0) & "', '" & defaultPath & "', '" & managedTables(i)(1) & "')"
+                   "VALUES ('" & managedTables(i)(0) & "', '" & defaultPath & "', '" & managedTables(i)(1) & "')", dbFailOnError
     Next i
 
     Exit Sub
@@ -227,7 +227,7 @@ Public Sub ConnectAllTables()
         If backendPath = "" Then Exit Sub
 
         ' СОХРАНЯЕМ НОВЫЙ ПУТЬ
-        db.Execute "UPDATE tbTableConnections SET TablePath = '" & Replace(backendPath, "'", "''") & "'"
+        db.Execute "UPDATE tbTableConnections SET TablePath = '" & Replace(backendPath, "'", "''") & "'", dbFailOnError
     End If
 
     ' Приводим tbTableConnections к целевому набору таблиц v2.0
@@ -339,7 +339,7 @@ Public Sub MigrateAddBirthdaysConnectionIfMissing()
     rs.Close
 
     db.Execute "INSERT INTO tbTableConnections (TableName, TablePath, Description) VALUES (" & _
-               "'tbBirthdays', '" & Replace(backendPath, "'", "''") & "', 'Справочник дней рождения')"
+               "'tbBirthdays', '" & Replace(backendPath, "'", "''") & "', 'Справочник дней рождения')", dbFailOnError
 
     MsgBox "Добавлена строка tbBirthdays. Выполните ConnectAllTables или перезапустите приложение.", vbInformation
     Exit Sub
