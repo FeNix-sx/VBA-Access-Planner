@@ -862,7 +862,7 @@ Public Sub DisableShiftKey()
 ErrorHandler:
     ' если свойство не существует - создаем его
     If Err.Number = PROPERTY_NOT_FOUND Then
-        Set prop = db.CreateProperty("AllowByPassKey", dbBoolean, True)
+        Set prop = db.CreateProperty("AllowByPassKey", dbBoolean, False)
         db.Properties.Append prop
         Resume Next
     Else
