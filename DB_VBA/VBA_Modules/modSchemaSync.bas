@@ -1,4 +1,4 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
 
 '################################################################
@@ -151,3 +151,4 @@ ErrorHandler:
     MsgBox "Ошибка при синхронизации структуры БД: " & Err.description, vbCritical
     If Not beDb Is Nothing Then beDb.Close
 End Sub
+
