@@ -1,38 +1,48 @@
 ﻿Option Compare Database
+Option Explicit
+
+' Константы позиции и размеров формы (twips)
+Private Const TWIPS_THEMESELECTOR_LEFT As Long = 5000
+Private Const TWIPS_THEMESELECTOR_TOP As Long = 5000
+Private Const TWIPS_THEMESELECTOR_WIDTH As Long = 3300
+Private Const TWIPS_THEMESELECTOR_HEIGHT As Long = 3500
 
 Private Sub Form_Load()
+    On Error Resume Next
+    DoCmd.MoveSize TWIPS_THEMESELECTOR_LEFT, TWIPS_THEMESELECTOR_TOP, TWIPS_THEMESELECTOR_WIDTH, TWIPS_THEMESELECTOR_HEIGHT
+    On Error GoTo 0
     LoadThemesList
     Me.KeyPreview = True
 End Sub
 
 Private Sub LoadThemesList()
     On Error GoTo ErrorHandler
-    
+
     Dim db As DAO.Database
     Dim rs As DAO.Recordset
-    
+
     Set db = CurrentDb
     Set rs = db.OpenRecordset("SELECT ThemeName FROM tbThemes ORDER BY ThemeName")
-    
+
     ' Очищаем ListBox правильным способом
     Me.lstThemes.RowSourceType = "Value List"
     Me.lstThemes.rowSource = ""
-    
+
     ' Добавляем элементы через цикл
     Do While Not rs.EOF
         Me.lstThemes.AddItem rs!ThemeName
         rs.MoveNext
     Loop
-    
+
     rs.Close
-    
+
     ' Выбираем первый элемент если есть
     If Me.lstThemes.ListCount > 0 Then
         Me.lstThemes.Selected(0) = True
     End If
-    
+
     Exit Sub
-    
+
 ErrorHandler:
     MsgBox "Ошибка загрузки списка тем: " & Err.description, vbCritical
     If Not rs Is Nothing Then rs.Close
@@ -87,19 +97,3 @@ End Sub
 Private Sub Form_Click()
         Debug.Print "сработало 1"
 End Sub
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

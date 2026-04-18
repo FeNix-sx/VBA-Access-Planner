@@ -38,6 +38,11 @@ dev_tooling_modules:
       public_api: [ExportCodeToFolder, ShowAllAccessForms]
     - name: modProjectAnalysis
       path: DB_VBA/VBA_Modules/modProjectAnalysis.bas
+      satellite_modules:
+        - { name: modProjectAnalysisCore, path: DB_VBA/VBA_Modules/modProjectAnalysisCore.bas }
+        - { name: modProjectAnalysisDeep, path: DB_VBA/VBA_Modules/modProjectAnalysisDeep.bas }
+        - { name: modProjectAnalysisTables, path: DB_VBA/VBA_Modules/modProjectAnalysisTables.bas }
+        - { name: modProjectAnalysisVbe, path: DB_VBA/VBA_Modules/modProjectAnalysisVbe.bas }
       public_api:
         - RunFullProjectAnalysis
         - RunQuickTest
@@ -57,6 +62,18 @@ dev_tooling_modules:
     - name: modDemo
       path: DB_VBA/VBA_Modules/modDemo.bas
       public_api: [ExportAllCodeToSingleFile]
+    - name: modFrmDemoConstants
+      path: DB_VBA/VBA_Modules/modFrmDemoConstants.bas
+      role_ru: "Константы текстов шагов формы frmDemo"
+    - name: modFrmDemoLogic
+      path: DB_VBA/VBA_Modules/modFrmDemoLogic.bas
+      role_ru: "Сценарии демо-прохода (вызов из Form_frmDemo)"
+    - name: modDailyPlannerSettings
+      path: DB_VBA/VBA_Modules/modDailyPlannerSettings.bas
+      role_ru: "tbSettings для планировщика и режим окна"
+    - name: modDailyPlannerGames
+      path: DB_VBA/VBA_Modules/modDailyPlannerGames.bas
+      role_ru: "Кнопка «Игры»: счётчик кликов и тексты сообщений"
 
 standard_modules:
   - file: DB_VBA/VBA_Modules/modDatabase.bas
