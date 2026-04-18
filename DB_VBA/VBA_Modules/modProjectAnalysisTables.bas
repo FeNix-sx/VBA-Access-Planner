@@ -43,7 +43,7 @@ Private Sub ПроанализироватьТаблицуСобытий()
     Debug.Print ""
     Debug.Print "--- ТАБЛИЦА СОБЫТИЙ (tbEventInstances) ---"
 
-    If Not ТаблицаСуществует("tbEventInstances") Then
+    If Not ProjAn_TableExistsSimple("tbEventInstances") Then
         Debug.Print "   ТАБЛИЦА НЕ НАЙДЕНА"
         Exit Sub
     End If
@@ -60,7 +60,7 @@ Private Sub ПроанализироватьТаблицуСобытий()
     Debug.Print "   ПОЛЯ ТАБЛИЦЫ:"
 
     For Each поле In описаниеТаблицы.Fields
-        Debug.Print "   • " & поле.Name & " | " & ПолучитьТипПоля(поле.Type) & " | " & ПолучитьСвойстваПоля(поле)
+        Debug.Print "   • " & поле.Name & " | " & ProjAn_GetFieldType(поле.Type) & " | " & ПолучитьСвойстваПоля(поле)
     Next поле
 
     Debug.Print "   ИНДЕКСЫ:"
@@ -92,7 +92,7 @@ Private Sub ПроанализироватьТаблицуИсполнителе
     Debug.Print ""
     Debug.Print "--- ТАБЛИЦА ИСПОЛНИТЕЛЕЙ (tbExecutors) ---"
 
-    If Not ТаблицаСуществует("tbExecutors") Then
+    If Not ProjAn_TableExistsSimple("tbExecutors") Then
         Debug.Print "   ТАБЛИЦА НЕ НАЙДЕНА"
         Exit Sub
     End If
@@ -108,7 +108,7 @@ Private Sub ПроанализироватьТаблицуИсполнителе
     Debug.Print "   ПОЛЯ ТАБЛИЦЫ:"
 
     For Each поле In описаниеТаблицы.Fields
-        Debug.Print "   • " & поле.Name & " | " & ПолучитьТипПоля(поле.Type) & " | " & ПолучитьСвойстваПоля(поле)
+        Debug.Print "   • " & поле.Name & " | " & ProjAn_GetFieldType(поле.Type) & " | " & ПолучитьСвойстваПоля(поле)
     Next поле
 
     Exit Sub
@@ -126,7 +126,7 @@ Private Sub ПроанализироватьТаблицуТем()
     Debug.Print ""
     Debug.Print "--- ТАБЛИЦА ТЕМ (tbThemes) ---"
 
-    If Not ТаблицаСуществует("tbThemes") Then
+    If Not ProjAn_TableExistsSimple("tbThemes") Then
         Debug.Print "   ТАБЛИЦА НЕ НАЙДЕНА"
         Exit Sub
     End If
@@ -142,7 +142,7 @@ Private Sub ПроанализироватьТаблицуТем()
     Debug.Print "   ПОЛЯ ТАБЛИЦЫ:"
 
     For Each поле In описаниеТаблицы.Fields
-        Debug.Print "   • " & поле.Name & " | " & ПолучитьТипПоля(поле.Type) & " | " & ПолучитьСвойстваПоля(поле)
+        Debug.Print "   • " & поле.Name & " | " & ProjAn_GetFieldType(поле.Type) & " | " & ПолучитьСвойстваПоля(поле)
     Next поле
 
     Exit Sub
@@ -160,7 +160,7 @@ Private Sub ПроанализироватьТаблицуНастроек()
     Debug.Print ""
     Debug.Print "--- ТАБЛИЦА НАСТРОЕК (tbSettings) ---"
 
-    If Not ТаблицаСуществует("tbSettings") Then
+    If Not ProjAn_TableExistsSimple("tbSettings") Then
         Debug.Print "   ТАБЛИЦА НЕ НАЙДЕНА"
         Exit Sub
     End If
@@ -176,7 +176,7 @@ Private Sub ПроанализироватьТаблицуНастроек()
     Debug.Print "   ПОЛЯ ТАБЛИЦЫ:"
 
     For Each поле In описаниеТаблицы.Fields
-        Debug.Print "   • " & поле.Name & " | " & ПолучитьТипПоля(поле.Type) & " | " & ПолучитьСвойстваПоля(поле)
+        Debug.Print "   • " & поле.Name & " | " & ProjAn_GetFieldType(поле.Type) & " | " & ПолучитьСвойстваПоля(поле)
     Next поле
 
     Exit Sub
@@ -194,7 +194,7 @@ Private Sub ПроанализироватьТаблицуПериодичнос
     Debug.Print ""
     Debug.Print "--- ТАБЛИЦА ПЕРИОДИЧНОСТИ (tbPeriodicity) ---"
 
-    If Not ТаблицаСуществует("tbPeriodicity") Then
+    If Not ProjAn_TableExistsSimple("tbPeriodicity") Then
         Debug.Print "   ТАБЛИЦА НЕ НАЙДЕНА"
         Exit Sub
     End If
@@ -210,7 +210,7 @@ Private Sub ПроанализироватьТаблицуПериодичнос
     Debug.Print "   ПОЛЯ ТАБЛИЦЫ:"
 
     For Each поле In описаниеТаблицы.Fields
-        Debug.Print "   • " & поле.Name & " | " & ПолучитьТипПоля(поле.Type) & " | " & ПолучитьСвойстваПоля(поле)
+        Debug.Print "   • " & поле.Name & " | " & ProjAn_GetFieldType(поле.Type) & " | " & ПолучитьСвойстваПоля(поле)
     Next поле
 
     Exit Sub
@@ -218,42 +218,6 @@ Private Sub ПроанализироватьТаблицуПериодичнос
 Ошибка:
     Debug.Print "   Ошибка анализа таблицы периодичности: " & Err.description
 End Sub
-
-'########################################################################
-'########            ПРОВЕРКА СУЩЕСТВОВАНИЯ ТАБЛИЦЫ              ########
-'########################################################################
-Private Function ТаблицаСуществует(ByVal имяТаблицы As String) As Boolean
-    On Error GoTo Ошибка
-
-    Dim проверка As Variant
-    проверка = DLookup("Name", "MSysObjects", "Name='" & имяТаблицы & "' AND Type=1")
-    ТаблицаСуществует = (Not IsNull(проверка))
-
-    Exit Function
-
-Ошибка:
-    ТаблицаСуществует = False
-End Function
-
-'########################################################################
-'########             ПОЛУЧЕНИЕ ТИПА ПОЛЯ                        ########
-'########################################################################
-Private Function ПолучитьТипПоля(типПоля As Integer) As String
-    Select Case типПоля
-        Case dbBoolean: ПолучитьТипПоля = "Да/Нет"
-        Case dbByte: ПолучитьТипПоля = "Байт"
-        Case dbInteger: ПолучитьТипПоля = "Целое"
-        Case dbLong: ПолучитьТипПоля = "Длинное целое"
-        Case dbCurrency: ПолучитьТипПоля = "Деньги"
-        Case dbSingle: ПолучитьТипПоля = "Одинарное"
-        Case dbDouble: ПолучитьТипПоля = "Двойное"
-        Case dbDate: ПолучитьТипПоля = "Дата/Время"
-        Case dbText: ПолучитьТипПоля = "Текст"
-        Case dbLongBinary: ПолучитьТипПоля = "OLE"
-        Case dbMemo: ПолучитьТипПоля = "Поле MEMO"
-        Case Else: ПолучитьТипПоля = "Другой (" & типПоля & ")"
-    End Select
-End Function
 
 '########################################################################
 '########             ПОЛУЧЕНИЕ СВОЙСТВ ПОЛЯ                     ########
@@ -314,7 +278,7 @@ Public Sub ProjAnTables_БыстрыйТестТаблиц()
 
     Dim i As Integer
     For i = 0 To UBound(таблицы)
-        If ТаблицаСуществует(таблицы(i)) Then
+        If ProjAn_TableExistsSimple(таблицы(i)) Then
             Debug.Print "? " & таблицы(i) & " - " & DCount("*", таблицы(i)) & " записей"
         Else
             Debug.Print "? " & таблицы(i) & " - НЕ НАЙДЕНА"

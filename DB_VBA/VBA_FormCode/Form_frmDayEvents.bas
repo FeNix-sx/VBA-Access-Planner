@@ -208,15 +208,7 @@ End Sub
 '########           ОБНОВЛЕНИЕ КАЛЕНДАРЯ                 ########
 '################################################################
 Private Sub Form_Close()
-    On Error GoTo ErrorHandler
-    ' Обновляем основную форму календаря
-    If CurrentProject.allForms("f_daily_planner").IsLoaded Then
-        Form_f_daily_planner.BuildCalendar
-    End If
-    Exit Sub
-
-ErrorHandler:
-    ' Пропускаем ошибку обновления календаря - не критично
+    RefreshDailyPlannerIfLoaded
 End Sub
 
 '################################################################
@@ -242,28 +234,7 @@ End Sub
 '########   ОТКРЫТИЕ ВЛОЖЕНИЯ ПО ПУТИ (файл или папка)   ########
 '################################################################
 Private Sub OpenAttachmentHyperlink(ByVal strPath As String)
-' Назначение: Открывает файл или папку по пути вложения (как в проводнике).
-' Принцип:    Dir + FollowHyperlink; песочные часы на время вызова.
-'================================================================
-    On Error GoTo ErrorHandler
-
-    strPath = Trim$(strPath)
-    If strPath = "" Then Exit Sub
-
-    If Dir(strPath, vbDirectory) = "" Then
-        MsgBox "Файл или папка не найдены: " & strPath, vbExclamation
-        Exit Sub
-    End If
-
-    DoCmd.Hourglass True
-    Me.Repaint
-    FollowHyperlink strPath
-    DoCmd.Hourglass False
-    Exit Sub
-
-ErrorHandler:
-    DoCmd.Hourglass False
-    MsgBox "Ошибка открытия: " & Err.description, vbCritical
+    modDailyPlannerUiHelpers.OpenAttachmentHyperlink strPath, Me
 End Sub
 
 '################################################################
@@ -340,18 +311,7 @@ End Sub
 '########           ЗАГРУЗКА ИСПОЛНИТЕЛЕЙ В КОМБОБОКС   ########
 '################################################################
 Private Sub LoadExecutorsCombo()
-    On Error GoTo ErrorHandler
-
-    Me.cboExecutor.rowSource = "SELECT ID, LastName & ' ' & Left(FirstName,1) & '.' & Left(MiddleName,1) & '.' AS FullName " & _
-                              "FROM tbExecutors WHERE ID IS NOT NULL ORDER BY SortOrder, LastName, FirstName"
-    Me.cboExecutor.ColumnCount = 2
-    Me.cboExecutor.BoundColumn = 1
-    Me.cboExecutor.ColumnWidths = "0;4см"
-
-    Exit Sub
-
-ErrorHandler:
-    MsgBox "Ошибка загрузки списка исполнителей: " & Err.description, vbExclamation
+    BindExecutorCombo Me.cboExecutor
 End Sub
 
 '################################################################
@@ -361,19 +321,7 @@ Private Sub txtBasisAttachment_DblClick(Cancel As Integer)
     On Error GoTo ErrorHandler
 
     If Not IsNull(Me.txtBasisAttachment) And Me.txtBasisAttachment <> "" Then
-        ' Проверяем существует ли файл или папка
-        If Dir(Me.txtBasisAttachment, vbDirectory) <> "" Then
-            ' Показываем уведомление о начале открытия
-            DoCmd.Hourglass True
-            Me.Repaint
-
-            ' Открываем файл или папку
-            FollowHyperlink Me.txtBasisAttachment
-
-            DoCmd.Hourglass False
-        Else
-            MsgBox "Файл или папка не найдены: " & Me.txtBasisAttachment, vbExclamation
-        End If
+        modDailyPlannerUiHelpers.OpenAttachmentHyperlink CStr(Me.txtBasisAttachment), Me
     End If
     Exit Sub
 

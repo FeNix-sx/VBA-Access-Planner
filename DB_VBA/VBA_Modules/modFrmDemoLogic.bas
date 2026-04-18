@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 '################################################################
-'########     ЛОГИКА ДЕМО-ПОШАГОВ (ВЫЗОВ ИЗ Form_frmDemo)   ########
+'########   ЛОГИКА ДЕМО-ПОШАГОВ (ВЫЗОВ ИЗ Form_frmDemo)  ########
 '################################################################
 Public Function FrmDemo_IsFormLoaded(ByVal formName As String) As Boolean
     FrmDemo_IsFormLoaded = CurrentProject.allForms(formName).IsLoaded

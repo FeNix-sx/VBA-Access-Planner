@@ -163,18 +163,7 @@ End Sub
 '########        ЗАГРУЗКА ИСПОЛНИТЕЛЕЙ В КОМБОБОКС      ########
 '################################################################
 Private Sub LoadExecutorsCombo()
-    On Error GoTo ErrorHandler
-    
-    Me.cboExecutor.rowSource = "SELECT ID, LastName & ' ' & Left(FirstName,1) & '.' & Left(MiddleName,1) & '.' AS FullName " & _
-                              "FROM tbExecutors WHERE ID IS NOT NULL ORDER BY SortOrder, LastName, FirstName"
-    Me.cboExecutor.ColumnCount = 2
-    Me.cboExecutor.BoundColumn = 1
-    Me.cboExecutor.ColumnWidths = "0;4см"
-    
-    Exit Sub
-    
-ErrorHandler:
-    MsgBox "Ошибка загрузки списка исполнителей: " & Err.description, vbExclamation
+    BindExecutorCombo Me.cboExecutor
 End Sub
 
 '################################################################
@@ -626,20 +615,7 @@ End Sub
 '########            ОБНОВЛЕНИЕ ФОРМЫ КАЛЕНДАРЯ          ########
 '################################################################
 Private Sub UpdateCalendarForm()
-    On Error GoTo ErrorHandler
-    
-    ' Проверяем что форма загружена
-    If Not CurrentProject.allForms("f_daily_planner").IsLoaded Then Exit Sub
-    
-    ' Вызываем процедуру перестроения календаря
-    Forms!f_daily_planner.BuildCalendar
-    Forms!f_daily_planner.Repaint
-    DoEvents
-    
-    Exit Sub
-    
-ErrorHandler:
-    ' Если ошибка - просто игнорируем
+    RefreshDailyPlannerIfLoaded
 End Sub
 
 '################################################################
