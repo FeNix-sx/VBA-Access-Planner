@@ -1,5 +1,22 @@
 ﻿Option Compare Database
 
+' Размер и позиция окна frmDayEvents (twips)
+Private Const TWIPS_FRMDAYEVENTS_LEFT As Long = 6000
+Private Const TWIPS_FRMDAYEVENTS_TOP As Long = 2000
+Private Const TWIPS_FRMDAYEVENTS_WIDTH As Long = 18500
+Private Const TWIPS_FRMDAYEVENTS_HEIGHT As Long = 11000
+
+'################################################################
+'########      РАЗМЕР И ПОЛОЖЕНИЕ ОКНА frmDayEvents       ########
+'################################################################
+Private Sub ApplyFrmDayEventsWindow()
+' Назначение: Задаёт позицию и габариты формы на экране.
+' Принцип:    Один вызов DoCmd.MoveSize с константами twips.
+'================================================================
+    DoCmd.MoveSize TWIPS_FRMDAYEVENTS_LEFT, TWIPS_FRMDAYEVENTS_TOP, _
+                   TWIPS_FRMDAYEVENTS_WIDTH, TWIPS_FRMDAYEVENTS_HEIGHT
+End Sub
+
 '################################################################
 '########        ОБНОВЛЕНИЕ ФОРМЫ ПРИ ЗАГРУЗКЕ          ########
 '################################################################
@@ -9,13 +26,9 @@ Private Sub Form_Load()
     ' Загружаем список исполнителей
     LoadExecutorsCombo
     
-    ' Устанавливаем оптимальный размер формы через DoCmd.MoveSize
-    DoCmd.MoveSize , , 18500, 11000  ' width, height в twips
+    ApplyFrmDayEventsWindow
     
-    ' Центрируем форму на экране (упрощенный вариант)
-    DoCmd.MoveSize 6000, 2000  ' Простая позиция вместо сложного центрирования
-    
-    ' ВКЛЮЧАЕМ РЕЖИМ ПРОСМОТРА ПРИ ЗАГРУЗКЕ
+    ' ВКЛЮЧАЕМ РЕЖИМ ПРОСМОТРА ПРИ ЗАГРУЗКЕ (один раз)
     SwitchToViewMode
     
     Exit Sub
@@ -25,21 +38,10 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########        НАСТРОЙКА РАЗМЕРА ПРИ ОТКРЫТИИ         ########
+'########        ОТКРЫТИЕ ФОРМЫ (без дубля с Form_Load)  ########
 '################################################################
 Private Sub Form_Open(Cancel As Integer)
-    On Error GoTo ErrorHandler
-    
-    ' Простая настройка размера
-    DoCmd.MoveSize , , 19500, 9000
-    
-    ' ?? ВКЛЮЧАЕМ РЕЖИМ ПРОСМОТРА ПРИ ОТКРЫТИИ ??
-    SwitchToViewMode
-    
-    Exit Sub
-    
-ErrorHandler:
-    ' Пропускаем ошибки размера
+    ' Размер, позиция и SwitchToViewMode — в Form_Load после загрузки контролов.
 End Sub
 
 '################################################################

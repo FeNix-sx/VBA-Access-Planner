@@ -1,6 +1,20 @@
 ﻿Option Compare Database
 
 '################################################################
+'########        БАЗОВЫЙ SQL СПИСКА РЕЗУЛЬТАТОВ ПОИСКА    ########
+'################################################################
+Private Function BuildSearchFormBaseSql() As String
+' Назначение: Единый SELECT+JOIN для источника записей формы поиска.
+' Возврат:    SQL без WHERE и ORDER BY (строка заканчивается пробелом).
+'================================================================
+    BuildSearchFormBaseSql = "SELECT ei.EventDate, ei.EventNote, " & _
+        "e.LastName & ' ' & Left(e.FirstName,1) & '.' & Left(e.MiddleName,1) & '.' AS ExecutorName, " & _
+        "ei.CompletionMark, ei.AttachmentPath " & _
+        "FROM tbEventInstances ei " & _
+        "LEFT JOIN tbExecutors e ON ei.ExecutorID = e.ID "
+End Function
+
+'################################################################
 '########            ЗАГРУЗКА ФОРМЫ ПОИСКА               ########
 '################################################################
 Private Sub Form_Load()
@@ -14,11 +28,7 @@ Private Sub Form_Load()
     LoadAttachmentCombo
     
     ' УСТАНАВЛИВАЕМ НАЧАЛЬНЫЙ SQL БЕЗ ID
-    Me.RecordSource = "SELECT ei.EventDate, ei.EventNote, " & _
-                     "e.LastName & ' ' & Left(e.FirstName,1) & '.' & Left(e.MiddleName,1) & '.' AS ExecutorName, " & _
-                     "ei.CompletionMark, ei.AttachmentPath " & _
-                     "FROM tbEventInstances ei " & _
-                     "LEFT JOIN tbExecutors e ON ei.ExecutorID = e.ID " & _
+    Me.RecordSource = BuildSearchFormBaseSql() & _
                      "ORDER BY ei.EventDate DESC"
     
     Me.Requery
@@ -106,11 +116,7 @@ Private Sub cmdReset_Click()
     Me.cboHasAttachment = "Не важно"
     
     ' УСТАНАВЛИВАЕМ SQL БЕЗ ПОЛЯ ID
-    Me.RecordSource = "SELECT ei.EventDate, ei.EventNote, " & _
-                     "e.LastName & ' ' & Left(e.FirstName,1) & '.' & Left(e.MiddleName,1) & '.' AS ExecutorName, " & _
-                     "ei.CompletionMark, ei.AttachmentPath " & _
-                     "FROM tbEventInstances ei " & _
-                     "LEFT JOIN tbExecutors e ON ei.ExecutorID = e.ID " & _
+    Me.RecordSource = BuildSearchFormBaseSql() & _
                      "ORDER BY ei.EventDate DESC"
     
     Me.Requery
@@ -129,11 +135,7 @@ Private Sub cmdSearch_Click()
     sqlWhere = BuildSearchConditions
     
     ' ФОРМИРУЕМ ПОЛНЫЙ SQL ЗАПРОС БЕЗ ID
-    sql = "SELECT ei.EventDate, ei.EventNote, " & _
-          "e.LastName & ' ' & Left(e.FirstName,1) & '.' & Left(e.MiddleName,1) & '.' AS ExecutorName, " & _
-          "ei.CompletionMark, ei.AttachmentPath " & _
-          "FROM tbEventInstances ei " & _
-          "LEFT JOIN tbExecutors e ON ei.ExecutorID = e.ID "
+    sql = BuildSearchFormBaseSql()
     
     If sqlWhere <> "" Then
         sql = sql & " WHERE " & sqlWhere
