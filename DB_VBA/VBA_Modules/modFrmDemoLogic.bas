@@ -1,4 +1,4 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
 
 '################################################################
@@ -1570,3 +1570,5 @@ Public Sub FrmDemo_DemoCloseThemeForm(ByVal frm As Form)
 
     Debug.Print "ДЕМО: Форма тем закрыта"
 End Sub
+
+

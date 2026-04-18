@@ -97,3 +97,4 @@ End Sub
 Private Sub Form_Click()
         Debug.Print "сработало 1"
 End Sub
+

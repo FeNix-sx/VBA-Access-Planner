@@ -1,4 +1,4 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
 
 '########################################################################
@@ -290,3 +290,4 @@ Public Sub ProjAnTables_БыстрыйТестТаблиц()
 Ошибка:
     Debug.Print "Ошибка быстрого теста: " & Err.description
 End Sub
+

@@ -1,4 +1,4 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
 
 '########################################################################
@@ -211,3 +211,4 @@ Public Function ProjAn_GetFieldType(ByVal fieldType As Integer) As String
         Case Else: ProjAn_GetFieldType = "Неизвестно (" & fieldType & ")"
     End Select
 End Function
+

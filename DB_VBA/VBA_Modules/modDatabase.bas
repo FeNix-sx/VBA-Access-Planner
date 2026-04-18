@@ -851,16 +851,21 @@ End Sub
 ' Если открыт только BE (в проекте нет локальной tbTableConnections), используется CurrentDb.
 
 Private Function DbHasTable(ByRef db As Database, ByVal tableName As String) As Boolean
-    ' Каноническая проверка существования таблицы вынесена в modSchemaSync.DbHasTable.
-    ' Здесь оставлен совместимый wrapper без изменения контракта вызовов.
-    DbHasTable = modSchemaSync.DbHasTable(db, tableName)
+    Dim tdf As TableDef
+    DbHasTable = False
+    For Each tdf In db.TableDefs
+        If tdf.Name = tableName Then
+            DbHasTable = True
+            Exit Function
+        End If
+    Next tdf
 End Function
 
 ' Возвращает True и outDb: либо открытый файл backend (outNeedClose=True), либо CurrentDb при работе из BE.
 Private Function ResolveBackendDbForBirthdays(ByRef outDb As Database, ByRef outNeedClose As Boolean) As Boolean
     Dim feDb As Database
     Dim rs As Recordset
-    Dim p As String
+    Dim P As String
 
     ResolveBackendDbForBirthdays = False
     outNeedClose = False
@@ -881,18 +886,18 @@ Private Function ResolveBackendDbForBirthdays(ByRef outDb As Database, ByRef out
         MsgBox "Таблица tbTableConnections пуста. Сначала настройте путь к backend (подключение таблиц).", vbExclamation, "tbBirthdays"
         Exit Function
     End If
-    p = Trim(Nz(rs!TablePath, ""))
+    P = Trim(Nz(rs!TablePath, ""))
     rs.Close
-    If Len(p) = 0 Then
+    If Len(P) = 0 Then
         MsgBox "В tbTableConnections не задан путь к файлу backend.", vbExclamation, "tbBirthdays"
         Exit Function
     End If
-    If Dir(p) = "" Then
-        MsgBox "Файл backend не найден:" & vbCrLf & p & vbCrLf & vbCrLf & "Проверьте путь или выполните ConnectAllTables.", vbCritical, "tbBirthdays"
+    If Dir(P) = "" Then
+        MsgBox "Файл backend не найден:" & vbCrLf & P & vbCrLf & vbCrLf & "Проверьте путь или выполните ConnectAllTables.", vbCritical, "tbBirthdays"
         Exit Function
     End If
 
-    Set outDb = DBEngine(0).OpenDatabase(p, False)
+    Set outDb = DBEngine(0).OpenDatabase(P, False)
     outNeedClose = True
     ResolveBackendDbForBirthdays = True
     Exit Function

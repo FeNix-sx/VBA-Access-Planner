@@ -1,4 +1,4 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
 
 '########################################################################
@@ -329,3 +329,5 @@ Private Sub ProjAn_AnalyzeCalendarStructure(ByVal frm As Form)
 ErrorHandler:
     Debug.Print "Ошибка анализа календаря: " & Err.description
 End Sub
+
+

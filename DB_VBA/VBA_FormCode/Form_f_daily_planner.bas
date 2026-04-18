@@ -96,7 +96,18 @@ Private Sub Form_Load()
     Call CheckLicenseOnStartup
 
     Call AutoConnectOnStartup
-    Call NotifyTodaysBirthdaysOncePerDay
+
+    If PlnSettings_GetValue(PLN_SETTINGS_SPLASH_DATE, "") <> Format(DateValue(Date), "yyyy-mm-dd") Then
+        Call Theme_LoadPaletteFromDatabase
+        On Error Resume Next
+        DoCmd.OpenForm "frmSplash", acNormal, , , , acDialog
+        If Err.Number = 0 Then
+            Call PlnSettings_SaveValue(PLN_SETTINGS_SPLASH_DATE, Format(DateValue(Date), "yyyy-mm-dd"))
+        End If
+        Err.Clear
+        On Error GoTo 0
+    End If
+
     ' Устанавливаем текущий месяц
     CurrentMonth = DateSerial(Year(Date), Month(Date), 1)
 
@@ -132,6 +143,8 @@ Private Sub Form_Load()
     Call InitializeWindowMode
     Call ApplyWindowModeFromSetting
     Call InitializeGamesButtonState
+
+    Call NotifyTodaysBirthdaysOncePerDay
 
 End Sub
 
@@ -315,7 +328,7 @@ Private Sub btn_games_Click()
     Exit Sub
 
 Err_Handler:
-    MsgBox "Ошибка в кнопке «Игры»: " & Err.Description, vbExclamation
+    MsgBox "Ошибка в кнопке «Игры»: " & Err.description, vbExclamation
 End Sub
 
 '################################################################
@@ -362,7 +375,7 @@ Private Sub InitializeGamesButtonState()
     Exit Sub
 
 Err_Handler:
-    Debug.Print "[f_daily_planner][ERR][InitializeGamesButtonState] " & Err.Number & " - " & Err.Description
+    Debug.Print "[f_daily_planner][ERR][InitializeGamesButtonState] " & Err.Number & " - " & Err.description
 End Sub
 
 '################################################################
@@ -1739,3 +1752,5 @@ End Sub
 Public Sub ApplyHideCompletedFilter()
     Call chkHideCompleted_AfterUpdate
 End Sub
+
+

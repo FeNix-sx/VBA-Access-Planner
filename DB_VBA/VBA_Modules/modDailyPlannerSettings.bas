@@ -1,5 +1,8 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
+
+' Ключ tbSettings: дата yyyy-mm-dd последнего показа заставки (не чаще раза в сутки).
+Public Const PLN_SETTINGS_SPLASH_DATE As String = "PlannerSplashDate"
 
 '################################################################
 '########     НАСТРОЙКИ ПЛАНИРОВЩИКА (tbSettings)        ########
@@ -45,7 +48,7 @@ Public Sub PlnSettings_SaveValue(ByVal settingName As String, ByVal settingValue
     Exit Sub
 
 Err_Handler:
-    Debug.Print "[PlnSettings][ERR][SaveValue] " & Err.Number & " - " & Err.Description & "; setting=" & settingName
+    Debug.Print "[PlnSettings][ERR][SaveValue] " & Err.Number & " - " & Err.description & "; setting=" & settingName
 End Sub
 
 '################################################################
@@ -95,3 +98,4 @@ ErrHandler:
     Debug.Print "[PlnSettings][ERR][GetWindowMode] " & Err.Number & " - " & Err.description
     Resume ExitFn
 End Function
+

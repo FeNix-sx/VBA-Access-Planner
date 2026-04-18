@@ -1,4 +1,4 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
 
 '########################################################################
@@ -132,3 +132,4 @@ Public Sub ProjAnVbe_GetFormsList()
 ErrorHandler:
     MsgBox "Ошибка при получении списка форм: " & Err.description, vbCritical
 End Sub
+

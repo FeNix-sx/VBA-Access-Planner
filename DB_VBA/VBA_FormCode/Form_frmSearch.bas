@@ -46,7 +46,8 @@ Private Sub Form_Load()
     Exit Sub
 
 ErrorHandler:
-    MsgBox "Ошибка при загрузке формы поиска: " & Err.description, vbCritical
+
+
 End Sub
 
 '################################################################
@@ -258,7 +259,7 @@ ErrorHandler:
 End Sub
 
 '################################################################
-'########          КНОПКА "ЗАКРЫТЬ"                      ########
+'########          ?????? "???????"                   ########
 '################################################################
 Private Sub cmdClose_Click()
     DoCmd.Close acForm, Me.Name
@@ -279,3 +280,5 @@ End Sub
 Public Sub CloseSearchForm()
     Call cmdClose_Click
 End Sub
+
+

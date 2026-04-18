@@ -1,4 +1,4 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
 
 '################################################################
@@ -120,3 +120,4 @@ Public Function DarkenColor(originalColor As Long, factor As Double) As Long
 
     DarkenColor = RGB(r, g, b)
 End Function
+

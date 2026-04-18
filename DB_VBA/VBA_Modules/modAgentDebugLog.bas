@@ -16,15 +16,15 @@ Public Function AgentJsonEsc(ByVal s As String) As String
 End Function
 
 Public Sub AgentDbgLog(ByVal hid As String, ByVal loc As String, ByVal msg As String, ByVal dataJson As String)
-    Dim p As String
+    Dim P As String
     Dim f As Integer
     Dim line As String
     Const MIRROR As String = "d:\Planner\debug-3cec1e.log"
     On Error Resume Next
     line = "{""sessionId"":""3cec1e"",""hid"":""" & AgentJsonEsc(hid) & """,""loc"":""" & AgentJsonEsc(loc) & """,""msg"":""" & AgentJsonEsc(msg) & """,""data"":" & dataJson & ",""ts"":" & CLng(Timer * 1000) & "}"
-    p = CurrentProject.path & "\debug-3cec1e.log"
+    P = CurrentProject.path & "\debug-3cec1e.log"
     f = FreeFile
-    Open p For Append As #f
+    Open P For Append As #f
     Print #f, line
     Close #f
     If LCase$(CurrentProject.path) <> "d:\planner" Then

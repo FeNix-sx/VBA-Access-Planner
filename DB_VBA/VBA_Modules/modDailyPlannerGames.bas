@@ -1,4 +1,4 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
 
 '################################################################
@@ -153,7 +153,7 @@ Private Function GetGamesSpecialBody(ByVal clickCount As Long) As String
 End Function
 
 '################################################################
-'########   Случайный ключ сообщения без повтора подряд   ########
+'########   Случайный ключ сообщения без повтора подряд  ########
 '################################################################
 Private Function GetRandomMessageKeyExcluding(ByVal lastMessageKey As Long) As Long
     Dim nextKey As Long
@@ -199,3 +199,4 @@ Private Function GetGamesRandomMessageByKey(ByVal messageKey As Long) As String
             GetGamesRandomMessageByKey = "Нажатие принято."
     End Select
 End Function
+

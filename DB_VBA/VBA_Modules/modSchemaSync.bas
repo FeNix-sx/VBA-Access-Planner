@@ -27,8 +27,7 @@ Public Function TableHasField(db As DAO.Database, tableName As String, fieldName
     On Error GoTo 0
 End Function
 
-' DEPRECATED: процедура сохранена для совместимости.
-' Актуальная точка добавления структуры — EnsureField.
+' Создание таблицы, если она не существует
 Public Sub EnsureTable(db As DAO.Database, tableName As String)
     Dim tdf As DAO.TableDef
     If Not DbHasTable(db, tableName) Then

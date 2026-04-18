@@ -1,4 +1,4 @@
-Option Compare Database
+﻿Option Compare Database
 Option Explicit
 
 '################################################################
@@ -6,7 +6,7 @@ Option Explicit
 '################################################################
 Public Sub RefreshDailyPlannerIfLoaded()
     On Error GoTo ErrorHandler
-    If CurrentProject.AllForms("f_daily_planner").IsLoaded Then
+    If CurrentProject.allForms("f_daily_planner").IsLoaded Then
         Form_f_daily_planner.BuildCalendar
     End If
     Exit Sub
@@ -20,7 +20,7 @@ End Sub
 Public Sub BindExecutorCombo(ByRef cbo As ComboBox)
     On Error GoTo ErrorHandler
     
-    cbo.RowSource = "SELECT ID, LastName & ' ' & Left(FirstName,1) & '.' & Left(MiddleName,1) & '.' AS FullName " & _
+    cbo.rowSource = "SELECT ID, LastName & ' ' & Left(FirstName,1) & '.' & Left(MiddleName,1) & '.' AS FullName " & _
                     "FROM tbExecutors WHERE ID IS NOT NULL ORDER BY SortOrder, LastName, FirstName"
     cbo.ColumnCount = 2
     cbo.BoundColumn = 1
@@ -57,3 +57,5 @@ ErrorHandler:
     DoCmd.Hourglass False
     MsgBox "Ошибка открытия: " & Err.description, vbCritical
 End Sub
+
+
