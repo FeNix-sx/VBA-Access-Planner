@@ -21,6 +21,15 @@
     }
 ,
     {
+      "name": "lblDate",
+      "type": 100,
+      "controlTypeName": "Type100",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
+,
+    {
       "name": "lbl_Caption",
       "type": 100,
       "controlTypeName": "Type100",
@@ -213,15 +222,6 @@
       "name": "ПустаяЯчейка162",
       "type": 127,
       "controlTypeName": "Type127",
-      "controlSource": "",
-      "rowSource": "",
-      "tabIndex": 0
-    }
-,
-    {
-      "name": "lblDate",
-      "type": 100,
-      "controlTypeName": "Type100",
       "controlSource": "",
       "rowSource": "",
       "tabIndex": 0

@@ -328,8 +328,8 @@ Public Sub NotifyTodaysBirthdaysOncePerDay()
     Dim savedKey As String
     Dim strSQL As String
     Dim msgText As String
-    Dim fullName As String
-    Dim ageText As String
+    Dim FullName As String
+    Dim AgeText As String
     Dim noteText As String
 
     Set db = CurrentDb
@@ -338,7 +338,7 @@ Public Sub NotifyTodaysBirthdaysOncePerDay()
 
     Set rs = db.OpenRecordset("SELECT SettingValue FROM tbSettings WHERE SettingName = '" & SETTING_NAME & "'", dbOpenSnapshot)
     If Not rs.EOF Then
-        savedKey = Nz(rs!SettingValue, "")
+        savedKey = Nz(rs!settingValue, "")
     End If
     rs.Close
     Set rs = Nothing
@@ -362,12 +362,12 @@ Public Sub NotifyTodaysBirthdaysOncePerDay()
     msgText = "Сегодня дни рождения:" & vbCrLf & String(28, "-") & vbCrLf & vbCrLf
 
     Do While Not rs.EOF
-        fullName = Trim(Nz(rs!FullName, ""))
-        ageText = Trim(Nz(rs!AgeText, ""))
+        FullName = Trim(Nz(rs!FullName, ""))
+        AgeText = Trim(Nz(rs!AgeText, ""))
         noteText = Trim(Nz(rs!Notes, ""))
         If Len(noteText) = 0 Then noteText = "—"
 
-        msgText = msgText & fullName & " — " & ageText & vbCrLf & _
+        msgText = msgText & FullName & " — " & AgeText & vbCrLf & _
                   "Примечание: " & noteText & vbCrLf & vbCrLf
         rs.MoveNext
     Loop
@@ -541,3 +541,5 @@ Public Sub RefreshBirthdaysUIAfterEdit()
     End If
     On Error GoTo 0
 End Sub
+
+

@@ -101,6 +101,20 @@ Private Sub ApplyFldTitleHeaderTheme()
 End Sub
 
 '################################################################
+'########     ПРИМЕЧАНИЕ ОТЧЁТА (ReportNote) — ТЕМА      ########
+'################################################################
+Private Sub ApplyReportNoteTheme()
+' Назначение: Окрашивает секцию ReportNote и поле fld_Filler в цвет фона формы.
+'================================================================
+    If CurrentTheme_Back = 0 And OtherTheme_Back = 0 Then LoadPaletteFromDB
+
+    ApplyThemedSectionBack Me.Section("ReportNote"), FormTheme_Back
+    ApplyThemedCtlBack Me.fld_Filler, FormTheme_Back
+    Me.fld_Filler.BorderThemeColorIndex = 0
+    Me.fld_Filler.borderColor = FormTheme_Back
+End Sub
+
+'################################################################
 '########   ЗАГОЛОВОК ГРУППЫ ПО ДАТЕ (ЦВЕТА ПО dayDiff)  ########
 '################################################################
 Private Sub ApplyGroupHeaderColors(ByVal dayDiff As Long)
@@ -217,6 +231,7 @@ Private Sub Report_Open(Cancel As Integer)
 '================================================================
     LoadPaletteFromDB
     ApplyFldTitleHeaderTheme
+    ApplyReportNoteTheme
 End Sub
 
 '################################################################
@@ -227,6 +242,7 @@ Private Sub Report_Activate()
 '================================================================
     If CurrentTheme_Back = 0 And OtherTheme_Back = 0 Then LoadPaletteFromDB
     ApplyFldTitleHeaderTheme
+    ApplyReportNoteTheme
 End Sub
 
 '################################################################
@@ -238,6 +254,7 @@ Public Sub ApplyThemeFromHost()
     On Error GoTo ExitSub
     If CurrentTheme_Back = 0 And OtherTheme_Back = 0 Then LoadPaletteFromDB
     ApplyFldTitleHeaderTheme
+    ApplyReportNoteTheme
     Me.Requery
 ExitSub:
 End Sub
@@ -301,6 +318,8 @@ Private Sub Detail_Paint()
     dayDiff = DateDiff("d", DateValue(occ), Date)
     ApplyDetailColors dayDiff
 End Sub
+
+
 
 
 

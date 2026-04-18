@@ -1,6 +1,6 @@
 ﻿{
   "reportName": "rptEventInstances",
-  "recordSource": "SELECT InstanceID, EventDate, EventNote, CompletionDate, CompletionMark, IIf(IsNull([CompletionDate]),0,1) AS IsCompleted FROM tbEventInstances WHERE [EventDate] >= Date() AND [EventDate] < Date() + 1; ",
+  "recordSource": "SELECT InstanceID, EventDate, EventNote, CompletionDate, CompletionMark, IIf(IsNull([CompletionDate]),0,1) AS IsCompleted FROM tbEventInstances WHERE EventDate = TempVars!EventPanelDate AND (TempVars!EventPanelExecutorID Is Null OR ExecutorID = TempVars!EventPanelExecutorID) ORDER BY IIf(IsNull([CompletionDate]),0,1), InstanceID; ",
   "controls": [
     {
       "name": "lbl_Day",
@@ -54,6 +54,15 @@
       "controlSource": "EventNote",
       "rowSource": "",
       "tabIndex": 1
+    }
+,
+    {
+      "name": "fld_Filler",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
     }
 
   ]

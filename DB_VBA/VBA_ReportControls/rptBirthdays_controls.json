@@ -37,6 +37,15 @@
       "rowSource": "",
       "tabIndex": 1
     }
+,
+    {
+      "name": "fld_Filler",
+      "type": 109,
+      "controlTypeName": "TextBox",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 0
+    }
 
   ]
 }

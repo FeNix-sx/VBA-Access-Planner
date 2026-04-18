@@ -1072,6 +1072,24 @@
       "rowSource": "",
       "tabIndex": 0
     }
+,
+    {
+      "name": "btn_window_mode",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 3
+    }
+,
+    {
+      "name": "btn_games",
+      "type": 104,
+      "controlTypeName": "Type104",
+      "controlSource": "",
+      "rowSource": "",
+      "tabIndex": 4
+    }
 
   ]
 }

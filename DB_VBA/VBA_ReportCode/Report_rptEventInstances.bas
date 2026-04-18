@@ -109,8 +109,14 @@ Private Sub ApplyReportTheme()
     ApplySolidSectionBack Me.Section(acHeader), HeaderTheme_Back
     ApplySolidSectionBack Me.Section(acPageHeader), HeaderTheme_Back
     ApplySolidSectionBack Me.Section(acGroupLevel1Header), FormTheme_Back
+    ApplySolidSectionBack Me.Section("ReportNote"), FormTheme_Back
 
     ApplyDetailZebraFromTheme
+    Me.fld_Filler.BackThemeColorIndex = 0
+    Me.fld_Filler.BackStyle = 1
+    Me.fld_Filler.backColor = FormTheme_Back
+    Me.fld_Filler.BorderThemeColorIndex = 0
+    Me.fld_Filler.borderColor = FormTheme_Back
 
     Me.lbl_Day.ForeColor = HeaderTheme_Text
     Me.lbl_Number.ForeColor = HeaderTheme_Text
@@ -130,6 +136,14 @@ Public Sub ApplyThemeFromHost(Optional ByVal forceDataRefresh As Boolean = False
         Me.Requery
     End If
 ExitSub:
+End Sub
+
+'################################################################
+'########   Публичный пересчет макета примечания         ########
+'################################################################
+Public Sub RefreshReportNoteLayout()
+    ' Размеры задаются вручную в конструкторе отчета.
+    ' Здесь оставлен пустой публичный метод для совместимости с вызовом из формы.
 End Sub
 
 '################################################################
@@ -235,6 +249,8 @@ Private Sub Report_Activate()
     ApplyRuntimeRecordSource
     ApplyReportTheme
 End Sub
+
+
 
 
 
